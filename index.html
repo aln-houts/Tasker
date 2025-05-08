@@ -3,115 +3,268 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tasker - Smart Task Management</title>
-
-  <!-- Bulma CSS -->
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"
-  />
-
-  <!-- Your app script -->
+  <title>Tasker - Task Management</title>
+  <!-- Material UI -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mui/material@5.15.12/dist/css/material.min.css" />
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background-color: #f5f5f5;
+      font-family: 'Roboto', sans-serif;
+    }
+    .mui-app-bar {
+      background-color: #1976d2;
+      color: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .mui-toolbar {
+      padding: 0 24px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+    }
+    .mui-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 24px 16px;
+    }
+    .task-card {
+      margin-bottom: 16px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: box-shadow 0.3s ease;
+    }
+    .task-card:hover {
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    .task-description {
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .task-meta {
+      font-size: 0.75rem;
+      color: rgba(0, 0, 0, 0.6);
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    .task-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .task-actions button {
+      min-width: 36px !important;
+      padding: 6px !important;
+      border-radius: 4px;
+    }
+    .filter-bar {
+      margin-bottom: 24px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      scrollbar-width: thin;
+    }
+    .filter-bar::-webkit-scrollbar {
+      height: 4px;
+    }
+    .filter-bar::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+    }
+    .filter-bar button[data-category="all"] {
+      background-color: #f5f5f5;
+      color: rgba(0, 0, 0, 0.87);
+    }
+    .filter-bar button[data-category="event"] {
+      background-color: #2196f3;
+      color: white;
+    }
+    .filter-bar button[data-category="daily"] {
+      background-color: #4caf50;
+      color: white;
+    }
+    .filter-bar button[data-category="project"] {
+      background-color: #ff9800;
+      color: white;
+    }
+    .filter-bar button[data-category="personal"] {
+      background-color: #9c27b0;
+      color: white;
+    }
+    .filter-bar button {
+      white-space: nowrap;
+      border-radius: 20px;
+      text-transform: none;
+      font-weight: 500;
+      border: none !important;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .filter-bar button:hover {
+      opacity: 0.9;
+    }
+    #addTaskForm {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: white;
+      padding: 24px;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+      z-index: 1000;
+      border-top-left-radius: 16px;
+      border-top-right-radius: 16px;
+    }
+    #addTaskForm.visible {
+      transform: translateY(0);
+    }
+    #toggleFormBtn {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 1001;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      transition: transform 0.3s ease;
+    }
+    #toggleFormBtn.visible {
+      transform: rotate(45deg);
+    }
+    .mui-form-control {
+      margin-bottom: 16px;
+    }
+    .mui-input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid rgba(0, 0, 0, 0.23);
+      border-radius: 4px;
+      font-size: 1rem;
+      transition: border-color 0.2s ease;
+    }
+    .mui-input:focus {
+      border-color: #1976d2;
+      outline: none;
+    }
+    .mui-input-label {
+      display: block;
+      margin-bottom: 4px;
+      color: rgba(0, 0, 0, 0.6);
+      font-size: 0.875rem;
+    }
+    .mui-button {
+      text-transform: none;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+    .mui-button-fab {
+      background-color: #1976d2;
+      color: white;
+    }
+    .mui-button-fab:hover {
+      background-color: #1565c0;
+    }
+    .mui-chip {
+      padding: 4px 8px;
+      border-radius: 16px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      background-color: rgba(0, 0, 0, 0.08);
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
   <script type="module" src="js/app.js"></script>
 </head>
 <body>
   <!-- Header -->
-  <header class="hero is-dark">
-    <div class="hero-body">
-      <h1 class="title has-text-white">Tasker</h1>
+  <header class="mui-app-bar">
+    <div class="mui-toolbar">
+      <h1 class="mui-typography-h6" style="margin: 0;">Tasker</h1>
     </div>
   </header>
 
   <!-- Main Content -->
-  <section class="section">
-    <div class="container">
-      <!-- Filter Bar -->
-      <div class="buttons has-addons is-centered mb-5">
-        <button onclick="filterTasks('all')" class="button is-light">All</button>
-        <button onclick="filterTasks('event')" class="button is-info">Events</button>
-        <button onclick="filterTasks('daily')" class="button is-success">Daily</button>
-        <button onclick="filterTasks('project')" class="button is-link">Projects</button>
-        <button onclick="filterTasks('personal')" class="button is-warning">Personal</button>
-      </div>
+  <main class="mui-container">
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <button class="mui-button" onclick="window.filterTasks('all')" data-category="all">All Tasks</button>
+      <button class="mui-button" onclick="window.filterTasks('event')" data-category="event">Events</button>
+      <button class="mui-button" onclick="window.filterTasks('daily')" data-category="daily">Daily Tasks</button>
+      <button class="mui-button" onclick="window.filterTasks('project')" data-category="project">Projects</button>
+      <button class="mui-button" onclick="window.filterTasks('personal')" data-category="personal">Personal</button>
+    </div>
 
-      <!-- Task Stack -->
-      <div id="taskStack" class="columns is-multiline">
-        <!-- JS will inject .column cards here -->
+    <!-- Task List -->
+    <div id="taskStack">
+      <!-- Task cards will be injected here -->
+    </div>
+  </main>
+
+  <!-- Add Task Form -->
+  <div id="addTaskForm">
+    <div class="mui-container" style="padding: 0;">
+      <div class="mui-paper" style="padding: 24px; border-radius: 8px;">
+        <h2 class="mui-typography-h6" style="margin: 0 0 24px 0;">Add New Task</h2>
+        <form id="taskForm" onsubmit="window.handleFormSubmit(event)">
+          <div class="mui-form-control">
+            <label class="mui-input-label" for="title">Title</label>
+            <input type="text" id="title" name="title" class="mui-input" placeholder="Enter task title" required>
+          </div>
+          
+          <div class="mui-form-control">
+            <label class="mui-input-label" for="description">Description</label>
+            <textarea id="description" name="description" class="mui-input" placeholder="Enter task description" rows="2"></textarea>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="mui-form-control">
+              <label class="mui-input-label" for="category">Category</label>
+              <select id="category" name="category" class="mui-input" onchange="window.handleCategoryChange(event)" required>
+                <option value="">Select a category</option>
+                <option value="event">Event</option>
+                <option value="daily">Daily Task</option>
+                <option value="project">Project</option>
+                <option value="personal">Personal</option>
+              </select>
+            </div>
+            
+            <div class="mui-form-control">
+              <label class="mui-input-label" for="priority">Priority</label>
+              <select id="priority" name="priority" class="mui-input" required>
+                <option value="high">High</option>
+                <option value="medium" selected>Medium</option>
+                <option value="low">Low</option>
+              </select>
+            </div>
+          </div>
+          
+          <!-- Dynamic form fields will be inserted here -->
+          <div id="dynamicFields"></div>
+          
+          <div style="display: flex; gap: 16px; margin-top: 24px;">
+            <button type="submit" class="mui-button mui-button-contained mui-button-primary" style="flex: 1;">Add Task</button>
+            <button type="button" onclick="window.toggleForm()" class="mui-button mui-button-outlined" style="flex: 1;">Cancel</button>
+          </div>
+        </form>
       </div>
     </div>
-  </section>
+  </div>
 
-  <!-- Add Task Slide-Up Form -->
-  <div
-    id="addTaskForm"
-    class="modal"
-  >
-    <div class="modal-background" onclick="toggleForm()"></div>
-    <div class="modal-card">
-      <header class="modal-card-head">
-        <p class="modal-card-title">Add New Task</p>
-        <button class="delete" aria-label="close" onclick="toggleForm()"></button>
-      </header>
-      <section class="modal-card-body">
-        <form id="addForm">
-          <div class="field">
-            <label class="label">Title</label>
-            <div class="control">
-              <input
-                class="input"
-                type="text"
-                id="taskTitle"
-                placeholder="Task Title"
-              />
-            </div>
-          </div>
-
-          <div class="field">
-            <label class="label">Description</label>
-            <div class="control">
-              <textarea
-                class="textarea"
-                id="taskDescription"
-                placeholder="Task Description"
-                rows="2"
-              ></textarea>
-            </div>
-          </div>
-
-          <div class="field is-horizontal">
-            <div class="field-body">
-              <div class="field">
-                <label class="label">Category</label>
-                <div class="control">
-                  <div class="select is-fullwidth">
-                    <select
-                      id="taskCategory"
-                      onchange="handleCategoryChange(this.value)"
-                    >
-                      <option value="">Select a category</option>
-                      <option value="event">Event</option>
-                      <option value="daily">Daily Task</option>
-                      <option value="project">Project</option>
-                      <option value="personal">Personal</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              <div class="field">
-                <label class="label">Priority</label>
-                <div class="control">
-                  <div class="select is-fullwidth">
-                    <select id="taskPriority">
-                      <option value="high">High</option>
-                      <option value="medium" selected>Medium</option>
-                      <option value="low">Low</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Dynamic form fields -->
-          <div id="dynamic
+  <!-- Floating Add Button -->
+  <button id="toggleFormBtn" onclick="window.toggleForm()" class="mui-button mui-button-fab">
+    <span class="material-icons">add</span>
+  </button>
+</body>
+</html>
