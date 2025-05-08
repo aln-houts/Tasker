@@ -96,7 +96,6 @@ function expandTask(taskId) {
 window.addTask = addTask;
 window.toggleForm = toggleForm;
 window.filterTasks = filterTasks;
-window.expandTask = expandTask;
 window.handleCategoryChange = handleCategoryChange;
 window.toggleTaskDetails = toggleTaskDetails;
 window.clearImagePreview = clearImagePreview;
@@ -105,7 +104,7 @@ window.editTask = (taskId) => {
 };
 window.updateTaskForm = (taskId) => {
   const newTasks = updateTaskForm(tasks, taskId);
-  if (newTasks !== tasks) { // Only update if tasks actually changed
+  if (newTasks !== tasks) {
     tasks = newTasks;
     saveTasks(tasks);
     renderTasks();
@@ -121,10 +120,9 @@ window.uploadEventImage = (taskId) => {
     if (file) {
       const reader = new FileReader();
       reader.onload = (event) => {
-        // Update task with image URL
         const imageUrl = event.target.result;
         const newTasks = updateTaskImage(tasks, taskId, imageUrl);
-        if (newTasks !== tasks) { // Only update if tasks actually changed
+        if (newTasks !== tasks) {
           tasks = newTasks;
           saveTasks(tasks);
           renderTasks();
@@ -138,7 +136,7 @@ window.uploadEventImage = (taskId) => {
 };
 window.completeTask = (taskId) => {
   const newTasks = completeTask(tasks, taskId);
-  if (newTasks !== tasks) { // Only update if tasks actually changed
+  if (newTasks !== tasks) {
     tasks = newTasks;
     saveTasks(tasks);
     renderTasks();
@@ -146,7 +144,7 @@ window.completeTask = (taskId) => {
 };
 window.deleteTask = (taskId) => {
   const newTasks = deleteTask(tasks, taskId);
-  if (newTasks !== tasks) { // Only update if tasks actually changed
+  if (newTasks !== tasks) {
     tasks = newTasks;
     saveTasks(tasks);
     renderTasks();

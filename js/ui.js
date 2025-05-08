@@ -4,7 +4,7 @@ import { createTask, updateTask, updateTaskImage } from './taskManager.js';
 // Create a task card element
 export function createTaskCard(task) {
   const card = document.createElement('div');
-  card.className = `p-4 rounded shadow text-black bg-${getCategoryColor(task.category)}-200 flex flex-col mb-4`;
+  card.className = `mui-paper task-card ${getCategoryColor(task.category)}`;
   
   let timeDisplay = 'No time set';
   if (task.dueDate) {
@@ -21,57 +21,71 @@ export function createTaskCard(task) {
     }
   }
   
-  const priorityClass = `text-${getPriorityColor(task.priority)}-600`;
-  
   // Main card content
-  const mainContent = document.createElement('div');
-  mainContent.className = 'flex justify-between items-center';
-  mainContent.innerHTML = `
-    <div class="flex-1">
-      <div class="flex items-center">
-        <h3 class="font-bold ${task.status === STATUS.COMPLETED ? 'line-through' : ''}">${task.title}</h3>
-        <span class="ml-2 text-sm ${priorityClass}">${task.priority}</span>
+  card.innerHTML = `
+    <div style="display: flex; gap: 12px;">
+      <div style="flex: 7;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <h3 class="mui-typography-subtitle1" style="margin: 0; ${task.status === STATUS.COMPLETED ? 'text-decoration: line-through;' : ''}">${task.title}</h3>
+          <span class="mui-chip" style="font-size: 0.75rem; ${getPriorityColor(task.priority)}">${task.priority}</span>
+        </div>
+        <p class="task-description mui-typography-body2" style="margin: 0 0 4px 0; color: rgba(0, 0, 0, 0.6);">${task.description || 'No description'}</p>
+        <div class="task-meta">
+          <span>${task.category === CATEGORIES.DAILY ? 'Time' : 'Due'}: ${timeDisplay}</span>
+          ${task.category === CATEGORIES.EVENT && task.location ? 
+            `<span style="display: flex; align-items: center; gap: 4px;">
+              <span class="material-icons" style="font-size: 16px;">location_on</span>
+              <span style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${task.location}">${task.location}</span>
+            </span>` : ''}
+        </div>
       </div>
-      <p class="text-sm text-gray-600">${task.description || 'No description'}</p>
-      <p class="text-xs text-gray-500">${task.category === CATEGORIES.DAILY ? 'Time' : 'Due'}: ${timeDisplay}</p>
-      ${task.category === CATEGORIES.EVENT && task.location ? 
-        `<p class="text-xs text-gray-500 flex items-center">
-          <span class="mr-1">📍</span>
-          <span class="truncate max-w-[200px]" title="${task.location}">${task.location}</span>
-        </p>` : ''}
-    </div>
-    <div class="flex items-center space-x-2">
-      <button onclick="toggleTaskDetails(${task.id})" class="text-sm text-gray-600 transition-transform duration-200" id="expandBtn-${task.id}">▼</button>
-      <button onclick="completeTask(${task.id})" class="bg-black text-white px-2 py-1 rounded text-sm">Done</button>
-      <button onclick="deleteTask(${task.id})" class="bg-red-500 text-white px-2 py-1 rounded text-sm">×</button>
+      <div class="task-actions" style="flex: 1; min-width: 40px; display: flex; flex-direction: column; gap: 4px;">
+        <button onclick="window.toggleTaskDetails(${task.id})" class="mui-button mui-button-outlined" id="expandBtn-${task.id}" style="min-width: 32px !important; padding: 4px !important;">
+          <span class="material-icons" style="font-size: 16px;">expand_more</span>
+        </button>
+        <button onclick="window.completeTask(${task.id})" class="mui-button mui-button-contained mui-button-primary" style="min-width: 32px !important; padding: 4px !important;">
+          <span class="material-icons" style="font-size: 16px;">check</span>
+        </button>
+        <button onclick="window.deleteTask(${task.id})" class="mui-button mui-button-outlined mui-button-error" style="min-width: 32px !important; padding: 4px !important;">
+          <span class="material-icons" style="font-size: 16px;">close</span>
+        </button>
+      </div>
     </div>
   `;
   
   // Expandable content
   const expandableContent = document.createElement('div');
-  expandableContent.className = 'mt-4 hidden border-t border-gray-300 pt-4';
+  expandableContent.className = 'hidden';
+  expandableContent.style.marginTop = '8px';
+  expandableContent.style.paddingTop = '8px';
+  expandableContent.style.borderTop = '1px solid rgba(0, 0, 0, 0.12)';
   expandableContent.id = `expandable-${task.id}`;
   
   // Add event-specific content
   if (task.category === CATEGORIES.EVENT) {
     expandableContent.innerHTML = `
-      <div class="space-y-4">
-        <div class="flex justify-between items-center">
-          <h4 class="font-medium">Event Details</h4>
-          <button onclick="editTask(${task.id})" class="text-sm text-blue-600 hover:text-blue-800">Edit</button>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h4 class="mui-typography-subtitle2" style="margin: 0;">Event Details</h4>
+          <button onclick="window.editTask(${task.id})" class="mui-button mui-button-outlined">
+            <span class="material-icons" style="font-size: 16px;">edit</span>
+          </button>
         </div>
-        <div class="space-y-2">
-          <p class="text-sm"><span class="font-medium">Created:</span> ${new Date(task.createdAt).toLocaleString()}</p>
-          <p class="text-sm"><span class="font-medium">Last Modified:</span> ${new Date(task.modifiedAt).toLocaleString()}</p>
-          ${task.completedAt ? `<p class="text-sm"><span class="font-medium">Completed:</span> ${new Date(task.completedAt).toLocaleString()}</p>` : ''}
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <p class="mui-typography-caption" style="margin: 0;"><strong>Created:</strong> ${new Date(task.createdAt).toLocaleString()}</p>
+          <p class="mui-typography-caption" style="margin: 0;"><strong>Last Modified:</strong> ${new Date(task.modifiedAt).toLocaleString()}</p>
+          ${task.completedAt ? `<p class="mui-typography-caption" style="margin: 0;"><strong>Completed:</strong> ${new Date(task.completedAt).toLocaleString()}</p>` : ''}
         </div>
-        <div class="event-image-container">
+        <div style="margin-top: 8px;">
           ${task.imageUrl ? `
-            <img src="${task.imageUrl}" alt="Event Flyer" class="max-w-full h-auto rounded shadow-lg">
+            <img src="${task.imageUrl}" alt="Event Flyer" style="max-width: 100%; height: auto; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
           ` : `
-            <div class="border-2 border-dashed border-gray-300 rounded p-4 text-center">
-              <p class="text-sm text-gray-500">No event image uploaded</p>
-              <button onclick="uploadEventImage(${task.id})" class="mt-2 text-sm text-blue-600 hover:text-blue-800">Upload Image</button>
+            <div style="border: 2px dashed rgba(0, 0, 0, 0.12); padding: 16px; text-align: center; border-radius: 4px;">
+              <p class="mui-typography-caption" style="margin: 0 0 8px 0; color: rgba(0, 0, 0, 0.6);">No event image uploaded</p>
+              <button onclick="window.uploadEventImage(${task.id})" class="mui-button mui-button-outlined">
+                <span class="material-icons" style="font-size: 16px;">upload</span>
+                <span style="margin-left: 4px;">Upload Image</span>
+              </button>
             </div>
           `}
         </div>
@@ -79,17 +93,15 @@ export function createTaskCard(task) {
     `;
   } else {
     expandableContent.innerHTML = `
-      <div class="space-y-2">
-        <p class="text-sm"><span class="font-medium">Created:</span> ${new Date(task.createdAt).toLocaleString()}</p>
-        <p class="text-sm"><span class="font-medium">Last Modified:</span> ${new Date(task.modifiedAt).toLocaleString()}</p>
-        ${task.completedAt ? `<p class="text-sm"><span class="font-medium">Completed:</span> ${new Date(task.completedAt).toLocaleString()}</p>` : ''}
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <p class="mui-typography-caption" style="margin: 0;"><strong>Created:</strong> ${new Date(task.createdAt).toLocaleString()}</p>
+        <p class="mui-typography-caption" style="margin: 0;"><strong>Last Modified:</strong> ${new Date(task.modifiedAt).toLocaleString()}</p>
+        ${task.completedAt ? `<p class="mui-typography-caption" style="margin: 0;"><strong>Completed:</strong> ${new Date(task.completedAt).toLocaleString()}</p>` : ''}
       </div>
     `;
   }
   
-  card.appendChild(mainContent);
   card.appendChild(expandableContent);
-  
   return card;
 }
 
@@ -100,10 +112,10 @@ export function toggleTaskDetails(taskId) {
   
   if (expandableContent.classList.contains('hidden')) {
     expandableContent.classList.remove('hidden');
-    expandBtn.style.transform = 'rotate(180deg)';
+    expandBtn.querySelector('.material-icons').textContent = 'expand_less';
   } else {
     expandableContent.classList.add('hidden');
-    expandBtn.style.transform = 'rotate(0deg)';
+    expandBtn.querySelector('.material-icons').textContent = 'expand_more';
   }
 }
 
@@ -117,10 +129,16 @@ export function uploadEventImage(taskId) {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (event) => {
-        // Update task with image URL
-        const imageUrl = event.target.result;
-        updateTaskImage(taskId, imageUrl);
+      reader.onload = (e) => {
+        const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+        const taskIndex = tasks.findIndex(t => t.id === taskId);
+        
+        if (taskIndex !== -1) {
+          tasks[taskIndex].imageUrl = e.target.result;
+          tasks[taskIndex].modifiedAt = new Date().toISOString();
+          localStorage.setItem('tasks', JSON.stringify(tasks));
+          renderTasks();
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -130,124 +148,107 @@ export function uploadEventImage(taskId) {
 }
 
 // Handle category change in form
-export function handleCategoryChange(category) {
+export function handleCategoryChange(event) {
+  const category = event.target.value;
   const dynamicFields = document.getElementById('dynamicFields');
-  dynamicFields.innerHTML = ''; // Clear existing fields
-  
-  if (!category) {
-    return; // No category selected, no additional fields needed
-  }
-  
-  // Create fields based on category
+  dynamicFields.innerHTML = '';
+
   switch (category) {
     case CATEGORIES.EVENT:
-      // Add location field
-      const locationField = document.createElement('div');
-      locationField.innerHTML = `
-        <label class="block text-sm font-medium mb-1">Location</label>
-        <input type="text" id="taskLocation" placeholder="Event Location" class="w-full p-2 rounded bg-gray-700 text-white">
-      `;
-      dynamicFields.appendChild(locationField);
-      
-      // Add date and time field
-      const dateTimeField = document.createElement('div');
-      dateTimeField.innerHTML = `
-        <label class="block text-sm font-medium mb-1">Date and Time</label>
-        <input type="datetime-local" id="taskDueDate" class="w-full p-2 rounded bg-gray-700 text-white" step="900">
-      `;
-      dynamicFields.appendChild(dateTimeField);
-
-      // Add image upload field
-      const imageField = document.createElement('div');
-      imageField.innerHTML = `
-        <label class="block text-sm font-medium mb-1">Event Image</label>
-        <div class="border-2 border-dashed border-gray-300 rounded p-4 text-center relative">
-          <input type="file" id="taskImage" accept="image/*" class="hidden">
-          <div id="imagePreview" class="hidden mb-2 relative">
-            <button type="button" onclick="clearImagePreview()" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600">×</button>
-            <img id="previewImg" class="max-w-full h-32 object-contain mx-auto">
+      dynamicFields.innerHTML = `
+        <div class="mui-form-group">
+          <label for="location" class="mui-label">Location</label>
+          <input type="text" id="location" name="location" class="mui-input" placeholder="Enter event location">
+        </div>
+        <div class="mui-form-group">
+          <label for="dateTime" class="mui-label">Date and Time</label>
+          <input type="datetime-local" id="dateTime" name="dateTime" class="mui-input">
+        </div>
+        <div class="mui-form-group">
+          <label for="imageUpload" class="mui-label">Event Image</label>
+          <input type="file" id="imageUpload" name="imageUpload" class="mui-input" accept="image/*">
+          <div id="imagePreview" style="margin-top: 8px; display: none;">
+            <img id="previewImg" src="" alt="Preview" style="max-width: 200px; border-radius: 4px;">
           </div>
-          <button type="button" onclick="document.getElementById('taskImage').click()" class="text-sm text-blue-600 hover:text-blue-800">
-            Choose Image
-          </button>
         </div>
       `;
-      dynamicFields.appendChild(imageField);
-
-      // Add image preview functionality
-      const imageInput = imageField.querySelector('#taskImage');
-      const imagePreview = imageField.querySelector('#imagePreview');
-      const previewImg = imageField.querySelector('#previewImg');
-
-      imageInput.onchange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            previewImg.src = event.target.result;
-            imagePreview.classList.remove('hidden');
-            // Store the image data in a data attribute for later use
-            imageInput.dataset.imageData = event.target.result;
-          };
-          reader.readAsDataURL(file);
-        }
-      };
       break;
-      
     case CATEGORIES.DAILY:
-      console.log('Creating daily task fields');
-      // Add time field only
-      const timeField = document.createElement('div');
-      timeField.innerHTML = `
-        <label class="block text-sm font-medium mb-1">Time</label>
-        <input type="time" id="taskDueDate" class="w-full p-2 rounded bg-gray-700 text-white" step="900">
+      dynamicFields.innerHTML = `
+        <div class="mui-form-group">
+          <label for="time" class="mui-label">Time</label>
+          <input type="time" id="time" name="time" class="mui-input">
+        </div>
       `;
-      dynamicFields.appendChild(timeField);
       break;
-      
     case CATEGORIES.PROJECT:
     case CATEGORIES.PERSONAL:
-      console.log('Creating project/personal task fields');
-      // Add due date field
-      const dueDateField = document.createElement('div');
-      dueDateField.innerHTML = `
-        <label class="block text-sm font-medium mb-1">Due Date</label>
-        <input type="date" id="taskDueDate" class="w-full p-2 rounded bg-gray-700 text-white">
+      dynamicFields.innerHTML = `
+        <div class="mui-form-group">
+          <label for="dueDate" class="mui-label">Due Date</label>
+          <input type="datetime-local" id="dueDate" name="dueDate" class="mui-input">
+        </div>
       `;
-      dynamicFields.appendChild(dueDateField);
       break;
+  }
+
+  // Add image preview functionality for event category
+  if (category === CATEGORIES.EVENT) {
+    const imageUpload = document.getElementById('imageUpload');
+    const imagePreview = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
+
+    imageUpload.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          previewImg.src = e.target.result;
+          imagePreview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      } else {
+        imagePreview.style.display = 'none';
+      }
+    });
   }
 }
 
 // Toggle the add task form
 export function toggleForm() {
   const form = document.getElementById('addTaskForm');
-  const isVisible = !form.classList.contains('translate-y-full');
-  if (isVisible) {
-    form.classList.add('translate-y-full');
-  } else {
-    form.classList.remove('translate-y-full');
-  }
+  const button = document.getElementById('toggleFormBtn');
+  form.classList.toggle('visible');
+  button.classList.toggle('visible');
 }
 
-// Get category color
+// Get category color class
 export function getCategoryColor(category) {
   switch (category) {
-    case CATEGORIES.EVENT: return 'blue';
-    case CATEGORIES.DAILY: return 'green';
-    case CATEGORIES.PROJECT: return 'purple';
-    case CATEGORIES.PERSONAL: return 'orange';
-    default: return 'gray';
+    case CATEGORIES.EVENT:
+      return 'background-color: #e3f2fd; border-left: 4px solid #2196f3;';
+    case CATEGORIES.DAILY:
+      return 'background-color: #e8f5e9; border-left: 4px solid #4caf50;';
+    case CATEGORIES.PROJECT:
+      return 'background-color: #fff3e0; border-left: 4px solid #ff9800;';
+    case CATEGORIES.PERSONAL:
+      return 'background-color: #f3e5f5; border-left: 4px solid #9c27b0;';
+    default:
+      return '';
   }
 }
 
-// Get priority color
+// Get priority color class
 export function getPriorityColor(priority) {
-  switch (priority) {
-    case PRIORITY.HIGH: return 'red';
-    case PRIORITY.MEDIUM: return 'yellow';
-    case PRIORITY.LOW: return 'green';
-    default: return 'gray';
+  switch (priority.toLowerCase()) {
+    case 'high':
+      return 'color: #d32f2f;';
+    case 'medium':
+      return 'color: #ed6c02;';
+    case 'low':
+      return 'color: #2e7d32;';
+    default:
+      return '';
   }
 }
 
@@ -263,49 +264,43 @@ export function clearImagePreview() {
 }
 
 // Edit task
-export function editTask(tasks, taskId) {
+export function editTask(taskId) {
+  const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
   const task = tasks.find(t => t.id === taskId);
-  if (!task) return;
-
-  // Show the form
-  toggleForm();
   
-  // Fill in the form fields
-  document.getElementById('taskTitle').value = task.title;
-  document.getElementById('taskDescription').value = task.description || '';
-  document.getElementById('taskCategory').value = task.category;
-  document.getElementById('taskPriority').value = task.priority;
-  
-  // Handle category-specific fields
-  handleCategoryChange(task.category);
-  
-  if (task.category === CATEGORIES.EVENT) {
-    document.getElementById('taskLocation').value = task.location || '';
-    if (task.dueDate) {
-      document.getElementById('taskDueDate').value = task.dueDate.slice(0, 16); // Format for datetime-local
+  if (task) {
+    const form = document.getElementById('taskForm');
+    form.title.value = task.title;
+    form.description.value = task.description || '';
+    form.category.value = task.category;
+    form.priority.value = task.priority;
+    
+    // Handle category-specific fields
+    switch (task.category) {
+      case CATEGORIES.EVENT:
+        form.location.value = task.location || '';
+        form.dateTime.value = task.dueDate ? new Date(task.dueDate).toISOString().slice(0, 16) : '';
+        if (task.imageUrl) {
+          const imagePreview = document.getElementById('imagePreview');
+          const previewImg = document.getElementById('previewImg');
+          previewImg.src = task.imageUrl;
+          imagePreview.style.display = 'block';
+        }
+        break;
+      case CATEGORIES.DAILY:
+        if (task.dueDate) {
+          const date = new Date(task.dueDate);
+          form.time.value = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+        }
+        break;
+      case CATEGORIES.PROJECT:
+      case CATEGORIES.PERSONAL:
+        form.dueDate.value = task.dueDate ? new Date(task.dueDate).toISOString().slice(0, 16) : '';
+        break;
     }
-    if (task.imageUrl) {
-      const imageInput = document.getElementById('taskImage');
-      const imagePreview = document.getElementById('imagePreview');
-      const previewImg = document.getElementById('previewImg');
-      if (imageInput && imagePreview && previewImg) {
-        previewImg.src = task.imageUrl;
-        imageInput.dataset.imageData = task.imageUrl;
-        imagePreview.classList.remove('hidden');
-      }
-    }
-  } else if (task.category === CATEGORIES.DAILY && task.dueDate) {
-    const date = new Date(task.dueDate);
-    document.getElementById('taskDueDate').value = 
-      `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-  } else if (task.dueDate) {
-    document.getElementById('taskDueDate').value = task.dueDate.slice(0, 10); // Format for date
+    
+    document.getElementById('taskModal').classList.remove('hidden');
   }
-
-  // Change the add button to update button
-  const addButton = document.querySelector('#addTaskForm button');
-  addButton.textContent = 'Update Task';
-  addButton.onclick = () => window.updateTaskForm(taskId);
 }
 
 // Add a new task
@@ -435,4 +430,107 @@ export function updateTaskForm(tasks, taskId) {
   
   toggleForm();
   return tasks;
+}
+
+export function handleFormSubmit(event) {
+  event.preventDefault();
+  const form = event.target;
+  const formData = new FormData(form);
+  
+  const taskData = {
+    title: formData.get('title'),
+    description: formData.get('description'),
+    category: formData.get('category'),
+    priority: formData.get('priority'),
+    status: STATUS.PENDING,
+    createdAt: new Date().toISOString(),
+    modifiedAt: new Date().toISOString()
+  };
+
+  // Handle category-specific fields
+  switch (taskData.category) {
+    case CATEGORIES.EVENT:
+      taskData.location = formData.get('location');
+      taskData.dueDate = formData.get('dateTime');
+      const imageFile = formData.get('imageUpload');
+      if (imageFile && imageFile.size > 0) {
+        // Handle image upload
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          taskData.imageUrl = e.target.result;
+          saveTask(taskData);
+        };
+        reader.readAsDataURL(imageFile);
+        return;
+      }
+      break;
+    case CATEGORIES.DAILY:
+      const time = formData.get('time');
+      if (time) {
+        const [hours, minutes] = time.split(':');
+        const date = new Date();
+        date.setHours(parseInt(hours), parseInt(minutes));
+        taskData.dueDate = date.toISOString();
+      }
+      break;
+    case CATEGORIES.PROJECT:
+    case CATEGORIES.PERSONAL:
+      taskData.dueDate = formData.get('dueDate');
+      break;
+  }
+
+  saveTask(taskData);
+}
+
+export function saveTask(taskData) {
+  const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+  tasks.push(taskData);
+  localStorage.setItem('tasks', JSON.stringify(tasks));
+  
+  // Clear form and close modal
+  document.getElementById('taskForm').reset();
+  document.getElementById('imagePreview').style.display = 'none';
+  document.getElementById('taskModal').classList.add('hidden');
+  
+  // Refresh task list
+  renderTasks();
+}
+
+export function renderTasks() {
+  const taskList = document.getElementById('taskList');
+  const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+  
+  // Sort tasks by due date
+  tasks.sort((a, b) => {
+    if (!a.dueDate) return 1;
+    if (!b.dueDate) return -1;
+    return new Date(a.dueDate) - new Date(b.dueDate);
+  });
+  
+  taskList.innerHTML = '';
+  tasks.forEach(task => {
+    taskList.appendChild(createTaskCard(task));
+  });
+}
+
+export function completeTask(taskId) {
+  const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+  const taskIndex = tasks.findIndex(t => t.id === taskId);
+  
+  if (taskIndex !== -1) {
+    tasks[taskIndex].status = STATUS.COMPLETED;
+    tasks[taskIndex].completedAt = new Date().toISOString();
+    tasks[taskIndex].modifiedAt = new Date().toISOString();
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+    renderTasks();
+  }
+}
+
+export function deleteTask(taskId) {
+  if (confirm('Are you sure you want to delete this task?')) {
+    const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+    const updatedTasks = tasks.filter(t => t.id !== taskId);
+    localStorage.setItem('tasks', JSON.stringify(updatedTasks));
+    renderTasks();
+  }
 } 
