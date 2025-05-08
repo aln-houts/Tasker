@@ -1,4 +1,5 @@
 import { CATEGORIES, STATUS, PRIORITY } from './constants.js';
+import { createTask, updateTask, updateTaskImage } from './taskManager.js';
 
 // Create a task card element
 export function createTaskCard(task) {
@@ -309,6 +310,7 @@ export function editTask(tasks, taskId) {
 
 // Add a new task
 export function addTask(tasks) {
+  console.log('UI: Starting addTask with tasks:', tasks);
   const title = document.getElementById('taskTitle').value.trim();
   const category = document.getElementById('taskCategory').value;
   const description = document.getElementById('taskDescription').value.trim();
@@ -316,17 +318,25 @@ export function addTask(tasks) {
   const priority = document.getElementById('taskPriority').value;
   const location = document.getElementById('taskLocation')?.value.trim() || '';
   
-  if (!title) return tasks;
+  console.log('UI: Form values:', { title, category, description, dueDate, priority, location });
+  
+  if (!title) {
+    console.log('UI: No title provided, returning original tasks');
+    return tasks;
+  }
   
   try {
+    // Create the task (taskManager.js will handle adding to array and saving)
+    console.log('UI: Creating task...');
     const task = createTask(tasks, title, category, description, dueDate, priority, location);
-    tasks = [...tasks, task];
+    console.log('UI: Created task:', task);
     
     // Handle image if it's an event
     if (category === CATEGORIES.EVENT) {
       const imageInput = document.getElementById('taskImage');
       if (imageInput && imageInput.dataset.imageData) {
-        tasks = updateTaskImage(tasks, task.id, imageInput.dataset.imageData);
+        console.log('UI: Updating task image...');
+        updateTaskImage(tasks, task.id, imageInput.dataset.imageData);
       }
     }
 
@@ -346,21 +356,25 @@ export function addTask(tasks) {
     }
     
     toggleForm();
+    console.log('UI: Returning updated tasks:', tasks);
     return tasks;
   } catch (error) {
+    console.error('UI: Error adding task:', error);
     // Show error message
-    const locationField = document.getElementById('locationField');
-    const errorMessage = document.createElement('p');
-    errorMessage.className = 'text-red-500 text-sm mt-1';
-    errorMessage.textContent = error.message;
-    
-    // Remove any existing error message
-    const existingError = locationField.querySelector('.text-red-500');
-    if (existingError) {
-      existingError.remove();
+    const form = document.getElementById('addTaskForm');
+    if (form) {
+      const errorMessage = document.createElement('p');
+      errorMessage.className = 'text-red-500 text-sm mt-1';
+      errorMessage.textContent = error.message;
+      
+      // Remove any existing error message
+      const existingError = form.querySelector('.text-red-500');
+      if (existingError) {
+        existingError.remove();
+      }
+      
+      form.appendChild(errorMessage);
     }
-    
-    locationField.appendChild(errorMessage);
     return tasks;
   }
 }

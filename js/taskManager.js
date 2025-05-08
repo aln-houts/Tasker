@@ -24,23 +24,10 @@ function validateLocation(location) {
 }
 
 // Create a new task
-export function createTask(tasks, title, category, description = '', dueDate = null, priority = PRIORITY.MEDIUM, location = '') {
-  // For daily tasks, only keep the time component
-  if (category === CATEGORIES.DAILY && dueDate) {
-    const date = new Date();
-    const [hours, minutes] = dueDate.split(':');
-    date.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-    dueDate = date.toISOString();
-  }
-
-  // Validate and format location for events
-  let validatedLocation = '';
-  if (category === CATEGORIES.EVENT) {
-    const validation = validateLocation(location);
-    if (!validation.isValid) {
-      throw new Error(validation.error);
-    }
-    validatedLocation = validation.location;
+export function createTask(tasks, title, category, description, dueDate, priority, location) {
+  if (!Array.isArray(tasks)) {
+    console.error('createTask: tasks is not an array, initializing empty array');
+    tasks = [];
   }
 
   const task = {
@@ -49,15 +36,23 @@ export function createTask(tasks, title, category, description = '', dueDate = n
     category,
     description,
     dueDate,
-    priority,
-    location: validatedLocation,
-    imageUrl: null,
+    priority: priority || PRIORITY.MEDIUM,
     status: STATUS.NOT_STARTED,
+    location: category === CATEGORIES.EVENT ? location : null,
+    imageUrl: null,
     createdAt: new Date().toISOString(),
     modifiedAt: new Date().toISOString(),
     completedAt: null
   };
-  
+
+  // For daily tasks, only keep the time component
+  if (category === CATEGORIES.DAILY && dueDate) {
+    const date = new Date();
+    const [hours, minutes] = dueDate.split(':');
+    date.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+    task.dueDate = date.toISOString();
+  }
+
   tasks.push(task);
   saveTasks(tasks);
   return task;

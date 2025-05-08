@@ -9,7 +9,8 @@ let currentFilter = 'all';
 
 // Initialize app
 function initApp() {
-  tasks = loadTasks();
+  const loadedTasks = loadTasks();
+  tasks = Array.isArray(loadedTasks) ? loadedTasks : [];
   renderTasks();
   // Set initial category
   handleCategoryChange(document.getElementById('taskCategory').value);
@@ -24,17 +25,31 @@ function filterTasks(category) {
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.classList.remove('ring-2', 'ring-white');
   });
-  if (category !== 'all') {
-    document.querySelector(`[data-category="${category}"]`).classList.add('ring-2', 'ring-white');
+  
+  // Only try to add the active class if the button exists
+  const activeButton = document.querySelector(`[data-category="${category}"]`);
+  if (activeButton && category !== 'all') {
+    activeButton.classList.add('ring-2', 'ring-white');
   }
 }
 
 // Render tasks to the UI
 function renderTasks() {
+  console.log('Rendering tasks:', tasks);
   const taskStack = document.getElementById('taskStack');
-  if (!taskStack) return; // Guard against missing element
+  if (!taskStack) {
+    console.error('Task stack element not found!');
+    return;
+  }
   
   taskStack.innerHTML = '';
+  
+  // Ensure tasks is an array
+  if (!Array.isArray(tasks)) {
+    console.error('Tasks is not an array:', tasks);
+    tasks = [];
+    return;
+  }
   
   // Filter tasks based on current filter
   let filteredTasks = tasks;
@@ -42,7 +57,10 @@ function renderTasks() {
     filteredTasks = tasks.filter(task => task.category === currentFilter);
   }
   
+  console.log('Filtered tasks:', filteredTasks);
   const sortedTasks = sortTasks([...filteredTasks]);
+  console.log('Sorted tasks:', sortedTasks);
+  
   sortedTasks.forEach(task => {
     const card = createTaskCard(task);
     taskStack.appendChild(card);
@@ -51,11 +69,21 @@ function renderTasks() {
 
 // Add a new task
 function addTask() {
+  console.log('Adding new task...');
+  if (!Array.isArray(tasks)) {
+    console.error('Tasks is not an array, resetting...');
+    tasks = [];
+  }
+  console.log('Current tasks before adding:', tasks);
   const newTasks = addTaskToUI(tasks);
+  console.log('New tasks after adding:', newTasks);
   if (newTasks !== tasks) { // Only update if tasks actually changed
+    console.log('Tasks updated, saving...');
     tasks = newTasks;
     saveTasks(tasks);
     renderTasks();
+  } else {
+    console.log('No changes to tasks');
   }
 }
 
