@@ -12,9 +12,13 @@ function initApp() {
   const loadedTasks = loadTasks();
   tasks = Array.isArray(loadedTasks) ? loadedTasks : [];
   renderTasks();
-  // Set initial category
-  handleCategoryChange(document.getElementById('taskCategory').value);
+
+  const categorySelect = document.getElementById('taskCategory');
+  if (categorySelect && categorySelect.value) {
+    handleCategoryChange(categorySelect.value);
+  }
 }
+
 
 // Filter tasks by category
 function filterTasks(category) {
