@@ -1,113 +1,80 @@
-# Tasker - Task Management App
+Tasker - Smart Task Management
 
-A modern, intuitive task management application built with vanilla JavaScript and Tailwind CSS. Tasker helps you organize your tasks by category, priority, and due date, with special features for different types of tasks.
+A simple, client-side to-do list app focused on productivity. Tasks are categorized and can be filtered, backed up, and managed automatically based on their category.
 
-## Features
+Features
 
-### Task Categories
-- **Events**: For time-specific events with location and image support
-- **Daily Tasks**: For recurring daily activities with time-based scheduling
-- **Projects**: For longer-term tasks with due dates
-- **Personal**: For personal tasks and reminders
+Category Filter: View tasks by category or see all at once.
 
-### Task Management
-- Create, edit, and delete tasks
-- Set task priorities (High, Medium, Low)
-- Add descriptions and due dates
-- Mark tasks as complete
-- Filter tasks by category
-- Sort tasks by date and priority
+ALL: Show every task.
 
-### Special Features
-- **Event Tasks**:
-  - Location support with map pin display
-  - Image upload capability
-  - Expandable details view
-  - Date and time selection
-- **Daily Tasks**:
-  - Time-based scheduling
-  - 15-minute increment time picker
-  - Automatic next-day creation upon completion
-- **Projects & Personal Tasks**:
-  - Due date selection
-  - Priority management
-  - Status tracking
+EVENTS: Show only Event tasks.
 
-### UI Features
-- Modern, responsive design
-- Category-based color coding
-- Priority indicators
-- Expandable task cards
-- Dynamic form fields based on task category
-- Image preview and management
-- Smooth animations and transitions
+DAILY: Show only Daily tasks.
 
-## Technical Details
+PERSONAL: Show only Personal tasks.
 
-### Built With
-- Vanilla JavaScript (ES6+)
-- Tailwind CSS for styling
-- LocalStorage for data persistence
-- Modern browser APIs (FileReader, etc.)
+PROJECT: Show only Project tasks.
 
-### Code Structure
-- Modular JavaScript architecture
-- Separate concerns for UI, task management, and storage
-- Clean, maintainable codebase
+Backup & Restore
 
-### File Organization
-```
-Tasker/
-├── index.html
-├── js/
-│   ├── app.js          # Main application logic
-│   ├── constants.js    # Constants and enums
-│   ├── storage.js      # LocalStorage handling
-│   ├── taskManager.js  # Task management functions
-│   └── ui.js          # UI-related functions
-└── README.md
-```
+Export all tasks as a JSON file named tasker-backup-<YYYY-MM-DD>.json.
 
-## Getting Started
+Import a JSON file to restore tasks from a previous backup.
 
-1. Clone the repository
-2. Open `index.html` in a modern web browser
-3. Start managing your tasks!
+Daily Task Auto-Cleanup
 
-## Usage
+At midnight (local time), all Daily category tasks are removed automatically.
 
-### Creating Tasks
-1. Click the "Add Task" button
-2. Select a task category
-3. Fill in the required fields
-4. For events, optionally add a location and image
-5. Click "Add Task" to save
+Upon cleanup, the same Daily tasks are re-generated for the new day.
 
-### Managing Tasks
-- Click the expand button (▼) to view task details
-- Use the "Done" button to mark tasks as complete
-- Click the "×" button to delete tasks
-- Use the filter buttons to view tasks by category
+Option in UI to permanently remove a Daily task before or after cleanup.
 
-### Event Images
-- Upload images when creating or editing events
-- View images in the expanded task view
-- Remove images using the "×" button in the image preview
-- Images are stored as base64 data URLs
+Installation
 
-## Browser Support
-- Chrome (recommended)
-- Firefox
-- Safari
-- Edge
+Clone or download the repository.
 
-## Future Enhancements
-- Task search functionality
-- Task categories customization
-- Dark mode support
-- Task sharing capabilities
-- Cloud storage integration
-- Mobile app version
+Serve the index.html and app.js files from a local web server (e.g., http-server, python -m http.server).
 
-## Contributing
-Feel free to submit issues and enhancement requests!
+Open index.html in your browser.
+
+Usage
+
+Add a Task
+
+Click the + button.
+
+Select a category from the dropdown.
+
+Fill out the form fields that appear for that category.
+
+Click Add Task.
+
+Filter Tasks
+
+Use the filter buttons at the top (All, Events, Daily, Personal, Project) to show only the tasks you need.
+
+Backup Tasks
+
+Click Export to download a JSON backup file named tasker-backup-<date>.json.
+
+Click Import and select a previously saved JSON file to restore tasks.
+
+Daily Auto-Cleanup
+
+Daily tasks are automatically cleared at midnight and re-created for the new day.
+
+To permanently remove a Daily task, click the Done button and choose Remove Forever in the confirmation.
+
+Development
+
+All data is stored in localStorage under the key tasks.
+
+The backup feature serializes this array to JSON for download.
+
+A scheduled check (e.g., using setTimeout/setInterval) triggers the Daily cleanup at midnight.
+
+License
+
+MIT © Alan Leenhotus
+
