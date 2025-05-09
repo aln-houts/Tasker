@@ -3,6 +3,7 @@
 import {
   getTasks,
   addTaskToStorage,
+  saveTasks,
   backupTasks,
   importTasksFromFile
 } from './js/storage.js';      // adjust only if you move storage.js
@@ -56,6 +57,8 @@ function getColor(cat) {
 function renderTaskCard(task) {
   const card = document.createElement('div');
   card.className = `task-card p-3 mb-3 rounded shadow bg-${getColor(task.category)}-200`;
+  card.dataset.id = task.id;  
+  card.dataset.category = task.category;           //  ← add this line
 
   card.innerHTML = `
     <div class="d-flex justify-content-between align-items-center">
@@ -99,6 +102,7 @@ function addTask() {
     date     : document.getElementById('taskDate')?.value    || '',
     time     : document.getElementById('taskTime')?.value    || '',
     dueDate  : document.getElementById('taskDueDate')?.value || '',
+    id       : crypto.randomUUID(),   
     created  : new Date().toISOString()
   };
 
@@ -120,9 +124,21 @@ function addTask() {
 
 /* ------------ event bindings once DOM ready ---- */
 document.addEventListener('DOMContentLoaded', () => {
+  /* ── one‑time migration: give ids to legacy tasks ── */
+  let tasks = getTasks();
+  let changed = false;
+  tasks.forEach(t => {
+    if (!t.id) {
+      t.id = crypto.randomUUID();
+      changed = true;
+    }
+  });
+  if (changed) saveTasks(tasks);   // persist the fixed tasks
+
+
   sel.addEventListener('change', () => updateFields(sel.value));
   updateFields();                 // initial state
-  getTasks().forEach(renderTaskCard);   // restore saved tasks
+  tasks.forEach(renderTaskCard);  // restore saved tasks
 });
 
 window.toggleForm     = toggleForm;
@@ -151,3 +167,31 @@ importInput?.addEventListener('change', e => {
     })
     .catch(err => alert('Import failed: ' + err.message));
 });
+
+function filterTasks(cat = 'all') {
+  Array.from(stack.querySelectorAll('.task-card')).forEach(card => {
+    const match = cat === 'all' || card.dataset.category === cat;
+    card.classList.toggle('d-none', !match);
+  });
+}
+
+window.toggleForm     = toggleForm;
+window.addTask        = addTask;
+window.toggleDetails  = toggleDetails;
+
+function completeTask(btn) {
+  const card = btn.closest('.task-card');
+  const id   = card.dataset.id;
+
+  // visual fade‑out
+  card.style.transition = 'opacity .5s';
+  card.style.opacity = '0';
+  setTimeout(() => card.remove(), 500);
+
+  // remove from localStorage
+  const remaining = getTasks().filter(t => t.id !== id);
+  saveTasks(remaining);
+}
+window.completeTask   = completeTask;   // <‑‑ make callable from HTML
+
+window.filterTasks    = filterTasks;

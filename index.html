@@ -23,12 +23,29 @@
   .bg-purple-200 { background:#e9d5ff!important }
 </style>
 </head>
-<header
-<button id="exportBtn" class="btn btn-outline-light btn-sm me-2">Backup Tasks</button>
+<!-- =========  HEADER  ========= -->
+<header class="bg-dark text-white p-3 d-flex flex-column flex-md-row align-items-start align-items-md-center gap-3">
+  <!-- App title -->
+  <h1 class="h4 mb-0 flex-shrink-0">Tasker</h1>
+  <!-- Backup / Restore controls -->
+  <div class="d-flex flex-wrap align-items-center gap-2">
+    <button id="exportBtn"  class="btn btn-outline-light btn-sm">Backup Tasks</button>
 
-<input type="file" id="importInput" accept=".json" style="display:none" />
-<button id="importBtn" class="btn btn-outline-light btn-sm">Restore Tasks</button>
+    <input  type="file" id="importInput" accept=".json" hidden />
+    <button id="importBtn"  class="btn btn-outline-light btn-sm">Restore Tasks</button>
+  </div>
+  <!-- Category Filter Bar -->
+  <div id="filterBar" class="btn-group btn-group-sm ms-md-auto" role="group">
+    <button class="btn btn-outline-light"    onclick="filterTasks('all')">All</button>
+    <button class="btn btn-outline-primary"  onclick="filterTasks('event')">Events</button>
+    <button class="btn btn-outline-primary"     onclick="filterTasks('daily')">Daily</button>
+    <button class="btn btn-outline-primary"  onclick="filterTasks('project')">Projects</button>
+    <button class="btn btn-outline-primary"   onclick="filterTasks('personal')">Personal</button>
+  </div>
+
 </header>
+<!-- ======== /HEADER ========= -->
+
 <body class="bg-dark text-white vh-100 d-flex flex-column overflow-hidden">
 
   <!-- Task List -->
