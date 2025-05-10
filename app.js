@@ -113,7 +113,14 @@ function addTask() {
     id       : crypto.randomUUID(),   
     created  : new Date().toISOString()
   };
-
+if (cat === 'daily') {
+    const tplKey = 'dailyTemplates';
+    const list   = JSON.parse(localStorage.getItem(tplKey) || '[]');
+    if (!list.some(t => t.title === task.title)) {   // avoid duplicates
+      list.push({ title: task.title, details: task.details });
+      localStorage.setItem(tplKey, JSON.stringify(list));
+    }
+  }
   const file = document.getElementById('taskImage')?.files[0];
   const finish = finalTask => {
     addTaskToStorage(finalTask);      // persist
@@ -148,6 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
   sel.addEventListener('change', () => updateFields(sel.value));
   updateFields();                 // initial state
   tasks.forEach(renderTaskCard);  // restore saved tasks
+  scheduleMidnightCleanup(renderTaskCard);
 });
 
 window.toggleForm     = toggleForm;
@@ -191,16 +199,31 @@ window.toggleDetails  = toggleDetails;
 function completeTask(btn) {
   const card = btn.closest('.task-card');
   const id   = card.dataset.id;
+  const isDaily = card.dataset.category === 'daily';
 
-  // visual fade‑out
-  card.style.transition = 'opacity .5s';
+  // ask if Daily task should be removed forever
+  let removeForever = false;
+  if (isDaily) {
+    removeForever = confirm('Remove this Daily task forever?\n(Click OK to delete permanently, Cancel to keep template.)');
+    if (removeForever) {
+      // purge from template store
+      const tplKey = 'dailyTemplates';
+      const templates = JSON.parse(localStorage.getItem(tplKey) || '[]')
+                          .filter(t => t.title !== card.querySelector('.fs-5').textContent);
+      localStorage.setItem(tplKey, JSON.stringify(templates));
+    }
+  }
+
+  // fade‑out UI
+  card.style.transition = 'opacity .4s';
   card.style.opacity = '0';
-  setTimeout(() => card.remove(), 500);
+  setTimeout(() => card.remove(), 400);
 
-  // remove from localStorage
+  // drop from task list in storage
   const remaining = getTasks().filter(t => t.id !== id);
   saveTasks(remaining);
 }
+
 window.completeTask   = completeTask;   // <‑‑ make callable from HTML
 
 window.filterTasks    = filterTasks;
