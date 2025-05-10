@@ -184,6 +184,15 @@ importInput?.addEventListener('change', e => {
     })
     .catch(err => alert('Import failed: ' + err.message));
 });
+import { initDailyRollover } from './js/dayRollover.js';
+import { dailyCleanup }      from './js/scheduler.js';     // you already have this
+
+document.addEventListener('DOMContentLoaded', () => {
+  /* …existing boot logic… */
+
+  // ---- new ----
+  initDailyRollover(() => dailyCleanup(renderTaskCard));
+});
 
 function filterTasks(cat = 'all') {
   Array.from(stack.querySelectorAll('.task-card')).forEach(card => {
