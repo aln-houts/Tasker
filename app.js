@@ -1,13 +1,7 @@
 // app.js  – final stable module
 // ----------------------------------------------
-import {
-  getTasks,
-  addTaskToStorage,
-  saveTasks,
-  backupTasks,
-  importTasksFromFile
-} from './js/storage.js';      // adjust only if you move storage.js
-
+import {  getTasks, addTaskToStorage, saveTasks, backupTasks, importTasksFromFile} from './js/storage.js';      // adjust only if you move storage.js
+import { scheduleMidnightCleanup } from './js/scheduler.js';
 /* ---------- element handles & constants -------- */
 const sel         = document.getElementById('taskCategory');
 const formBody    = document.getElementById('formBody');
