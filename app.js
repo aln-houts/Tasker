@@ -49,6 +49,20 @@ function toggleForm() {
   sel.value = '';
   updateFields();
 }
+function clearFormFields() {
+  // text / date / time inputs
+  addForm.querySelectorAll('input, textarea, select').forEach(el => {
+    if (el.type === 'file') {
+      el.value = '';            // clear file chooser
+    } else {
+      el.value = '';            // clear text/date/time boxes
+    }
+  });
+
+  // after clearing, reset field visibility to nothing selected
+  sel.value = '';
+  updateFields();               // hide category‑specific fields
+}
 
 function getColor(cat) {
   return { event:'blue', daily:'pink', project:'orange', personal:'purple' }[cat] || 'gray';
@@ -109,7 +123,8 @@ function addTask() {
   const file = document.getElementById('taskImage')?.files[0];
   const finish = finalTask => {
     addTaskToStorage(finalTask);      // persist
-    renderTaskCard(finalTask);        // show
+    renderTaskCard(finalTask);  
+    clearFormFields();
     toggleForm();                     // hide form
   };
 
