@@ -24,7 +24,16 @@ const categoryFields = {
   project: ['details','due-date'],
   personal:['details','date']
 };
-
+// Clear all form fields
+function clearForm() {
+  document.getElementById('taskTitle').value = '';
+  sel.value = '';
+  document.getElementById('taskDetails').value = '';
+  document.getElementById('taskDate').value = '';
+  document.getElementById('taskTime').value = '';
+  document.getElementById('taskDueDate').value = '';
+  document.getElementById('taskImage').value = '';
+                          }
 /* ------------- one‑time UI prep ---------------- */
 if (timeSel) {
   timeSel.innerHTML = `<option value="" disabled selected>Select time</option>` +
