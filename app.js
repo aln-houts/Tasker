@@ -54,6 +54,10 @@ function updateFields(cat = '') {
 }
 
 function toggleForm() {
+  const isOpening = !addForm.classList.contains('show');
+  if (isOpening) {
+    clearForm();       // wipe previous entries
+  }
   addForm.classList.toggle('show');
   sel.value = '';
   updateFields();
