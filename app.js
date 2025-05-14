@@ -8,6 +8,28 @@ import {
   importTasksFromFile
 } from './js/storage.js';      // adjust only if you move storage.js
 
+// Helper to turn dueDate or event date into a short “Apr 5” style label
+function formatDisplayDate(task) {
+  const dateStr = task.dueDate || task.date;
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString(undefined, {
+    month: 'short',
+    day:   'numeric'
+  });
+}
+
+// Clears out #taskStack and re-renders every task in sorted order
+function renderAllTasks() {
+  stack.innerHTML = '';
+  const tasks = getTasks();
+  tasks
+    .sort((a, b) =>
+      new Date(a.dueDate || a.date) - new Date(b.dueDate || b.date)
+    )
+    .forEach(renderTaskCard);
+}
+
 /* ---------- element handles & constants -------- */
 const sel         = document.getElementById('taskCategory');
 const formBody    = document.getElementById('formBody');
