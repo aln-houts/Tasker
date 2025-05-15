@@ -1,9 +1,37 @@
 // js/storage.js
+// 1. Replace your existing getTasks with this:
 
-/** Get the full array of tasks from localStorage */
 export function getTasks() {
-    return JSON.parse(localStorage.getItem('tasks') || '[]');
-  }
+  const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+  // Normalize today to midnight
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // 1a. Remove past-dated tasks
+  const validTasks = tasks.filter(task => {
+    if (task.date) {
+      const taskDate = new Date(task.date);
+      return taskDate >= today;
+    }
+    return true;
+  });
+
+  // 1b. Sort by date (earliest first). Undated tasks go last.
+  validTasks.sort((a, b) => {
+    if (a.date && b.date) {
+      return new Date(a.date) - new Date(b.date);
+    }
+    if (a.date) return -1;
+    if (b.date) return 1;
+    return 0;
+  });
+
+  // 1c. Persist cleaned list
+  localStorage.setItem('tasks', JSON.stringify(validTasks));
+  return validTasks;
+}
+
   
   /** Overwrite localStorage with the given tasks array */
   export function saveTasks(tasks) {
@@ -11,11 +39,20 @@ export function getTasks() {
   }
   
   /** Append a single task and persist */
-  export function addTaskToStorage(task) {
-    const tasks = getTasks();
-    tasks.push(task);
-    saveTasks(tasks);
+export function addTaskToStorage(task) {
+  // 2a. Normalize any date field to YYYY-MM-DD
+  if (task.date) {
+    task.date = new Date(task.date).toISOString().split('T')[0];
   }
+
+  // 2b. Pull in the filtered & sorted list
+  const tasks = getTasks();
+
+  // 2c. Add the new task and save
+  tasks.push(task);
+  saveTasks(tasks);
+}
+
   
   /** Remove all tasks of the 'daily' category */
   export function clearDailyTasks() {
