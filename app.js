@@ -105,8 +105,8 @@ function renderTaskCard(task) {
         <button class="btn btn-dark btn-sm ms-2" onclick="completeTask(this)">Done</button>
       </div>
     </div>
-    ${summaryHtml} {/* <<< NEWLY INSERTED SUMMARY */}
-    <div class="task-details mt-2 d-none text-white"></div> {/* text-white might need adjustment based on card bg */}
+    ${summaryHtml} 
+    <div class="task-details mt-2 d-none text-white"></div>
   `;
 
   const details = card.querySelector('.task-details');
