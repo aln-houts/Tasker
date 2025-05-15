@@ -77,8 +77,8 @@ function renderTaskCard(task) {
     if (k === 'imageData') {
       const img = document.createElement('img');
       img.src = task[k];
+    // leverage CSS above for sizing & centering
       img.className = 'img-fluid rounded mb-2';
-      img.style.maxHeight = '200px';
       details.appendChild(img);
     } else {
       const label = k==='dueDate' ? 'Due Date'
