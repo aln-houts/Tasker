@@ -8,28 +8,6 @@ import {
   importTasksFromFile
 } from './js/storage.js';      // adjust only if you move storage.js
 
-// Helper to turn dueDate or event date into a short “Apr 5” style label
-function formatDisplayDate(task) {
-  const dateStr = task.dueDate || task.date;
-  if (!dateStr) return '';
-  const d = new Date(dateStr);
-  return d.toLocaleDateString(undefined, {
-    month: 'short',
-    day:   'numeric'
-  });
-}
-
-// Clears out #taskStack and re-renders every task in sorted order
-function renderAllTasks() {
-  stack.innerHTML = '';
-  const tasks = getTasks();
-  tasks
-    .sort((a, b) =>
-      new Date(a.dueDate || a.date) - new Date(b.dueDate || b.date)
-    )
-    .forEach(renderTaskCard);
-}
-
 /* ---------- element handles & constants -------- */
 const sel         = document.getElementById('taskCategory');
 const formBody    = document.getElementById('formBody');
@@ -46,16 +24,7 @@ const categoryFields = {
   project: ['details','due-date'],
   personal:['details','date']
 };
-// Clear all form fields
-function clearForm() {
-  document.getElementById('taskTitle').value = '';
-  sel.value = '';
-  document.getElementById('taskDetails').value = '';
-  document.getElementById('taskDate').value = '';
-  document.getElementById('taskTime').value = '';
-  document.getElementById('taskDueDate').value = '';
-  document.getElementById('taskImage').value = '';
-                          }
+
 /* ------------- one‑time UI prep ---------------- */
 if (timeSel) {
   timeSel.innerHTML = `<option value="" disabled selected>Select time</option>` +
@@ -76,10 +45,6 @@ function updateFields(cat = '') {
 }
 
 function toggleForm() {
-  const isOpening = !addForm.classList.contains('show');
-  if (isOpening) {
-    clearForm();       // wipe previous entries
-  }
   addForm.classList.toggle('show');
   sel.value = '';
   updateFields();
@@ -95,21 +60,19 @@ function renderTaskCard(task) {
   card.dataset.id = task.id;  
   card.dataset.category = task.category;           //  ← add this line
 
- // Add Delete Forever button here
   card.innerHTML = `
     <div class="d-flex justify-content-between align-items-center">
       <span class="fs-5">${task.title}</span>
       <div>
+        <button class="btn btn-link btn-sm text-secondary" onclick="toggleDetails(this)">➤</button>
         <button class="btn btn-dark btn-sm ms-2" onclick="completeTask(this)">Done</button>
       </div>
     </div>
     <div class="task-details mt-2 d-none text-white"></div>
   `;
- 
-  const details = card.querySelector('.task-details');
-  // Add the Delete Forever button here
-  ['details','date','time','dueDate','imageData'].forEach(k => {
 
+  const details = card.querySelector('.task-details');
+  ['details','date','time','dueDate','imageData'].forEach(k => {
     if (!task[k]) return;
     if (k === 'imageData') {
       const img = document.createElement('img');
@@ -124,16 +87,7 @@ function renderTaskCard(task) {
     }
   });
 
-  // Add the "Delete Forever" button to the task details
-  details.innerHTML += `
-    <button class="btn btn-danger btn-sm mt-2 delete-forever-button">Delete Forever</button>
-  `;
-
-  // Attach event listener for the new delete button
-  card.querySelector('.delete-forever-button').addEventListener('click', () => deleteTaskForever(task.id));
-
   stack.appendChild(card);
-  return card; // Return the created card element
 }
 
 function addTask() {
@@ -187,6 +141,18 @@ document.addEventListener('DOMContentLoaded', () => {
   tasks.forEach(renderTaskCard);  // restore saved tasks
 });
 
+window.toggleForm     = toggleForm;
+window.addTask        = addTask;
+window.renderTaskCard = renderTaskCard;
+window.toggleDetails  = btn =>
+  btn.closest('.task-card').querySelector('.task-details')
+     .classList.toggle('d-none');
+window.completeTask   = btn => {
+  const card = btn.closest('.task-card');
+  card.style.transition = 'opacity .5s';
+  card.style.opacity = '0';
+  setTimeout(() => card.remove(), 500);
+};
 
 /* --------- backup / restore buttons ------------ */
 exportBtn?.addEventListener('click',  () => backupTasks());
@@ -209,13 +175,9 @@ function filterTasks(cat = 'all') {
   });
 }
 
-window.toggleForm = toggleForm;
-window.addTask = addTask;
-window.renderTaskCard = renderTaskCard; // Expose to window if needed
-window.toggleDetails = btn => {
-  const details = btn.closest('.task-card').querySelector('.task-details');
- details.classList.toggle('d-none');
-};
+window.toggleForm     = toggleForm;
+window.addTask        = addTask;
+window.toggleDetails  = toggleDetails;
 
 function completeTask(btn) {
   const card = btn.closest('.task-card');
@@ -230,32 +192,6 @@ function completeTask(btn) {
   const remaining = getTasks().filter(t => t.id !== id);
   saveTasks(remaining);
 }
-window.completeTask = completeTask; // <‑‑ make callable from HTML
-// New function to delete a task forever
-function deleteForever(btn) {
-  const card = btn.closest('.task-card');
-  const id = card.dataset.id;
-
-  // remove from localStorage
-  const remaining = getTasks().filter(t => t.id !== id);
-  saveTasks(remaining);
-
-  // remove from DOM
-  card.remove();
-}
-
-function deleteTaskForever(taskId) {
-  // remove from localStorage
-  const remaining = getTasks().filter(t => t.id !== taskId);
-  saveTasks(remaining);
-
-  // remove from DOM
-  const card = document.querySelector(`.task-card[data-id="${taskId}"]`);
-  if (card) {
-    card.remove();
-  }
-}
-
+window.completeTask   = completeTask;   // <‑‑ make callable from HTML
 
 window.filterTasks    = filterTasks;
-

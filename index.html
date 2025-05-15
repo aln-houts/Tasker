@@ -21,21 +21,6 @@
   .bg-pink-200   { background:#fbcfe8!important }
   .bg-orange-200 { background:#fed7aa!important }
   .bg-purple-200 { background:#e9d5ff!important }
-
-  #toggleFormBtn {
-    /* Trapezoid shape (adjust values as needed) */
-    clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
-    width: 120px; /* Adjust width */
-    height: 50px; /* Adjust height */
-    /* Centering */
-    left: 50%;
-    transform: translateX(-50%);
-    /* Positioning above the form (adjust bottom value) */
-    bottom: 10px; /* Adjust as needed */
-  }
-  .bg-pink-200   { background:#fbcfe8!important }
-  .bg-orange-200 { background:#fed7aa!important }
-  .bg-purple-200 { background:#e9d5ff!important }
 </style>
 </head>
 <!-- =========  HEADER  ========= -->
@@ -69,11 +54,9 @@
   </div>
 
  <!-- Slide-up Form -->
-<div id="addTaskForm" class="start-0 w-100 bg-dark p-4 shadow">
-  <!-- Floating Add Button -->
-  <button id="toggleFormBtn" onclick="toggleForm()" class="btn btn-success fs-3"></button>
+<div id="addTaskForm" class="position-fixed bottom-0 start-0 w-100 bg-dark p-4 shadow">
   <select id="taskCategory" class="form-select mb-3 bg-secondary text-white">
-    <option value="" disabled selected>Select category*</option>
+    <option value="" disabled selected>Select category</option>
     <option value="event">Event</option>
     <option value="daily">Daily</option>
     <option value="project">Project</option>
@@ -115,6 +98,13 @@
     </div>
   </div>  
 
+
+  <!-- Floating Add Button -->
+  <button id="toggleFormBtn" onclick="toggleForm()"
+          class="btn btn-success position-fixed rounded-circle shadow-lg p-1 fs-3"
+          style="bottom:1.5rem; right:1.5rem;">
+    +
+  </button>
 
 <!-- App entry (must be an ES‑module) -->
 <script type="module" src="app.js"></script>
