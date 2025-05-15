@@ -18,6 +18,33 @@
     margin-bottom: 8px; /* Add some spacing */
     /* Add any other styles you want */
 }
+.task-header {             /* already flex from JS; just be explicit */
+  display:flex;
+  align-items:flex-start;
+}
+
+.task-title {
+  overflow:hidden;
+  text-overflow:ellipsis;  /* prevents long titles from pushing content */
+  white-space:nowrap;
+}
+
+.task-controls button {
+  width:36px;              /* uniform round buttons */
+  height:36px;
+  display:grid;
+  place-items:center;
+}
+
+.task-card.expanded .task-body {
+  max-height:600px;        /* whatever size you prefer */
+}
+
+.task-card:not(.expanded) .task-body {
+  max-height:0;
+  overflow:hidden;
+  transition:max-height .25s ease;
+}
 
 /* You might want to adjust padding or margins for .card-content if needed */
 .task-card .card-content {
