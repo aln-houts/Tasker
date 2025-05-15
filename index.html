@@ -10,6 +10,35 @@
   rel="stylesheet"
 />
 <style>
+  /* In style.css */
+.task-card-datetime {
+    font-size: 0.8em; /* Smaller font size */
+    color: #555;      /* A slightly muted color */
+    margin-top: 5px;
+    margin-bottom: 8px; /* Add some spacing */
+    /* Add any other styles you want */
+}
+
+/* You might want to adjust padding or margins for .card-content if needed */
+.task-card .card-content {
+    padding: 10px;
+    /* Potentially adjust if the new datetime element affects layout */
+}
+
+/* Your existing .task-image-preview and .task-image-preview.expanded styles */
+.task-image-preview {
+    max-width: 70px; /* Smaller preview image */
+    max-height: 70px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-top: 5px;
+    transition: max-width 0.3s ease, max-height 0.3s ease; /* Smooth transition */
+}
+
+.task-image-preview.expanded {
+    max-width: 100%; /* Larger image when card is expanded */
+    max-height: 200px; /* Adjust as needed */
+}
   .task-details img {
   display: block;
   margin: 0.5rem auto;   /* vertical gap + auto-horizontal centering */
