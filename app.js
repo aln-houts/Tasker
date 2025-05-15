@@ -89,7 +89,12 @@ function renderTaskCard(task) {
 
   stack.appendChild(card);
 }
-
+function renderAllTasks() {
+  // clear out the stack
+  stack.innerHTML = '';
+  // re-fetch (i.e. sorted + past-filtered) and render
+  getTasks().forEach(renderTaskCard);
+}
 function addTask() {
   const title = document.getElementById('taskTitle').value.trim();
   const cat   = sel.value;
@@ -109,7 +114,7 @@ function addTask() {
   const file = document.getElementById('taskImage')?.files[0];
   const finish = finalTask => {
     addTaskToStorage(finalTask);      // persist
-    renderTaskCard(finalTask);        // show
+    renderAllTasks();        // show
     toggleForm();                     // hide form
   };
 
@@ -138,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   sel.addEventListener('change', () => updateFields(sel.value));
   updateFields();                 // initial state
-  tasks.forEach(renderTaskCard);  // restore saved tasks
+  renderAllTasks();  // restore saved tasks
 });
 
 window.toggleForm     = toggleForm;
