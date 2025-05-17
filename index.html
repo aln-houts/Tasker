@@ -114,57 +114,53 @@
   </div>
 
  <!-- Slide-up Form -->
-<div id="addTaskForm" class="position-fixed bottom-0 start-0 w-100 bg-dark p-4 shadow">
-  <select id="taskCategory" class="form-select mb-3 bg-secondary text-white">
-    <option value="" disabled selected>Select category</option>
-    <option value="event">Event</option>
-    <option value="daily">Daily</option>
-    <option value="project">Project</option>
-    <option value="personal">Personal</option>
-  </select>
-  <div id="formBody" class="d-none">
-    <div class="mb-2">
-      <label for="taskTitle" class="form-label text-white">Title</label>
-      <input id="taskTitle" class="form-control bg-secondary text-white" placeholder="Task Title">
-    </div>
+ <div id="addTaskForm" class="position-fixed bottom-0 start-0 w-100 bg-dark p-4 shadow">
+  <!-- Tab Button -->
+  <button id="toggleFormBtn" class="btn btn-secondary w-100 mb-3" onclick="toggleForm()">Add New Task</button>
 
-        <!-- Dynamic Fields -->
-        <div id="field-details" class="mb-2 d-none">
-          <label for="taskDetails" class="form-label text-white">Details</label>
-          <textarea id="taskDetails" class="form-control bg-secondary text-white" rows="2"></textarea>
-        </div>
-        <div id="field-date" class="mb-2 d-none">
-          <label for="taskDate" class="form-label text-white">Date</label>
-          <input type="date" id="taskDate" class="form-control bg-secondary text-white" />
-        </div>
-        <div id="field-time" class="mb-2 d-none">
-          <label for="taskTime" class="form-label text-white">Time</label>
-          <select id="taskTime" class="form-select bg-secondary text-white">
-            <option value="" disabled selected>Select time</option>
-          </select>
-        </div>        
-        <div id="field-due-date" class="mb-2 d-none">
-          <label for="taskDueDate" class="form-label text-white">Due Date</label>
-          <input type="date" id="taskDueDate" class="form-control bg-secondary text-white" />
-        </div>
-        <div id="field-image" class="mb-2 d-none">
-          <label for="taskImage" class="form-label text-white">Image Upload</label>
-          <input type="file" id="taskImage" accept="image/*" class="form-control bg-secondary text-white" />
-        </div>
-
-        <!-- Add Task Button -->
-        <button onclick="addTask()" class="btn btn-success w-100 mt-2">Add Task</button>
+  <div id="formContent" class="d-none">
+    <select id="taskCategory" class="form-select mb-3 bg-secondary text-white">
+      <option value="" disabled selected>Select category</option>
+      <option value="event">Event</option>
+      <option value="daily">Daily</option>
+      <option value="project">Project</option>
+      <option value="personal">Personal</option>
+    </select>
+    <div id="formBody" class="d-none">
+      <div class="mb-2">
+        <label for="taskTitle" class="form-label text-white">Title</label>
+        <input id="taskTitle" class="form-control bg-secondary text-white" placeholder="Task Title">
       </div>
+
+      <!-- Dynamic Fields -->
+      <div id="field-details" class="mb-2 d-none">
+        <label for="taskDetails" class="form-label text-white">Details</label>
+        <textarea id="taskDetails" class="form-control bg-secondary text-white" rows="2"></textarea>
+      </div>
+      <div id="field-date" class="mb-2 d-none">
+        <label for="taskDate" class="form-label text-white">Date</label>
+        <input type="date" id="taskDate" class="form-control bg-secondary text-white" />
+      </div>
+      <div id="field-time" class="mb-2 d-none">
+        <label for="taskTime" class="form-label text-white">Time</label>
+        <select id="taskTime" class="form-select bg-secondary text-white">
+          <option value="" disabled selected>Select time</option>
+        </select>
+      </div>
+      <div id="field-due-date" class="mb-2 d-none">
+        <label for="taskDueDate" class="form-label text-white">Due Date</label>
+        <input type="date" id="taskDueDate" class="form-control bg-secondary text-white" />
+      </div>
+      <div id="field-image" class="mb-2 d-none">
+        <label for="taskImage" class="form-label text-white">Image Upload</label>
+        <input type="file" id="taskImage" accept="image/*" class="form-control bg-secondary text-white" />
+      </div>
+
+      <!-- Add Task Button -->
+      <button onclick="addTask()" class="btn btn-success w-100 mt-2">Add Task</button>
     </div>
-  </div>  
-
-
-  <!-- Floating Add Button -->
-  <button id="toggleFormBtn" onclick="toggleForm()"
-          class="btn btn-success position-fixed rounded-circle shadow-lg p-1 fs-3"
-          style="bottom:1.5rem; right:1.5rem;">
-    +
-  </button>
+  </div>
+</div>
 
 <!-- App entry (must be an ES‑module) -->
 <script type="module" src="app.js"></script>
