@@ -192,8 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   if (changed) saveTasks(tasks);
 
-  sel.addEventListener('change', () => updateFields(sel.value));
-  updateFields();
+  sel.addEventListener('change', () => updateFields(sel.value)); // Keep the existing change listener
   renderAllTasks();
 });
 
