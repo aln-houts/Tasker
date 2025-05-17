@@ -71,8 +71,12 @@
   height: auto;          /* preserve aspect ratio */
   }
   #addTaskForm {
-    transform: translateY(100%);
+ position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
     transition: transform .3s ease-in-out;
+    transform: translateY(calc(100% - 48px)); /* Adjust 48px to the height of your tab button */
     z-index: 1050;
   }
   #addTaskForm.show { transform: translateY(0); }
@@ -115,7 +119,7 @@
 
  <!-- Slide-up Form -->
  <div id="addTaskForm" class="position-fixed bottom-0 start-0 w-100 bg-dark p-4 shadow">
-  <!-- Tab Button -->
+  <!-- Tab Button - This will remain visible -->
   <button id="toggleFormBtn" class="btn btn-secondary w-100 mb-3" onclick="toggleForm()">Add New Task</button>
 
   <div id="formContent" class="d-none">
