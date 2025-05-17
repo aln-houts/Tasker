@@ -44,8 +44,8 @@
   <!-- Form Container -->
   <div class="form-container">
     <!-- Slide-up Form -->
-    <div id="addTaskForm" class="position-fixed bottom-0 start-0 w-100 bg-dark p-4 shadow">
-      <select id="taskCategory" class="form-select mb-3 bg-secondary text-white">
+    <div id="addTaskForm" class="show position-fixed bottom-0 start-0 w-100 bg-dark p-4 shadow">
+      <select id="taskCategory" class="form-select mb-3 bg-secondary text-white" onchange="toggleForm()">
         <option value="" disabled selected>Select category</option>
         <option value="event">Event</option>
         <option value="daily">Daily</option>
@@ -89,11 +89,9 @@
   </div>  
 
     <!-- Floating Add Button -->
-    <button id="toggleFormBtn" onclick="toggleForm()"
-            class=\"btn btn-success position-fixed rounded-circle shadow-lg p-1 fs-3 toggle-button\">\
+    <button id="toggleFormBtn" class="btn btn-success position-fixed rounded-circle shadow-lg p-1 fs-3 toggle-button">
       +
     </button>
-  </div>
 
 <!-- App entry (must be an ES‑module) -->
 <script type="module" src="app.js"></script>
