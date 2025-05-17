@@ -200,18 +200,18 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   if (changed) saveTasks(tasks);
 
-  // ⬇️  NEW listener: clears form whenever a category is picked
-  sel.addEventListener('change', () => {
-    Array.from(addForm.elements).forEach(el => {
-      if (el === sel) return;                          // keep the dropdown
-      if (el.type === 'checkbox' || el.type === 'radio') {
-        el.checked = false;
-      } else {
-        el.value = '';
-      }
-    });
-    updateFields(sel.value);                           // show correct fields
+sel.addEventListener('change', () => {
+  updateFields(sel.value); // show relevant fields BEFORE wiping inputs
+  Array.from(addForm.elements).forEach(el => {
+    if (el === sel) return; // skip the dropdown
+    if (el.type === 'checkbox' || el.type === 'radio') {
+      el.checked = false;
+    } else {
+      el.value = '';
+    }
   });
+});
+
 
   renderAllTasks();
 });
