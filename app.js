@@ -51,6 +51,14 @@ function toggleForm() {
   updateFields(); // Update visible fields for empty category
 }
 
+// ――― helper: clear + keep form open ―――
+function resetForm() {
+  addForm.reset();     // wipe all inputs
+  sel.value = '';      // blank the dropdown
+  updateFields();      // hide dynamic fields
+  addForm.classList.add('show'); // ensure form stays visible
+}
+
 function getColor(cat) {
   return { event:'blue', daily:'pink', project:'orange', personal:'purple' }[cat] || 'gray';
 }
@@ -168,7 +176,7 @@ function addTask() {
   const finish = finalTask => {
     addTaskToStorage(finalTask);
     renderAllTasks();
-    toggleForm(); // This will now also reset the form
+    resetForm();   // clear inputs but leave form showing
   };
 
   if (file && categoryFields[cat]?.includes('image')) { // Only process image if category supports it
@@ -192,9 +200,22 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   if (changed) saveTasks(tasks);
 
-  sel.addEventListener('change', () => updateFields(sel.value)); // Keep the existing change listener
+  // ⬇️  NEW listener: clears form whenever a category is picked
+  sel.addEventListener('change', () => {
+    Array.from(addForm.elements).forEach(el => {
+      if (el === sel) return;                          // keep the dropdown
+      if (el.type === 'checkbox' || el.type === 'radio') {
+        el.checked = false;
+      } else {
+        el.value = '';
+      }
+    });
+    updateFields(sel.value);                           // show correct fields
+  });
+
   renderAllTasks();
 });
+
 
 // Function to toggle details visibility
 function toggleDetails(btn) {
