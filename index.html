@@ -10,96 +10,12 @@
   rel="stylesheet"
 />
 <style>
-  /* In style.css */
-.task-card-datetime {
-    font-size: 0.8em; /* Smaller font size */
-    color: #555;      /* A slightly muted color */
-    margin-top: 5px;
-    margin-bottom: 8px; /* Add some spacing */
-    /* Add any other styles you want */
-}
-.task-header {             /* already flex from JS; just be explicit */
-  display:flex;
-  align-items:flex-start;
-}
-
-.task-title {
-  overflow:hidden;
-  text-overflow:ellipsis;  /* prevents long titles from pushing content */
-  white-space:nowrap;
-}
-
-.task-controls button {
-  width:36px;              /* uniform round buttons */
-  height:36px;
-  display:grid;
-  place-items:center;
-}
-
-.task-card.expanded .task-body {
-  max-height:600px;        /* whatever size you prefer */
-}
-
-.task-card:not(.expanded) .task-body {
-  max-height:0;
-  overflow:hidden;
-  transition:max-height .25s ease;
-}
-
-/* You might want to adjust padding or margins for .card-content if needed */
-.task-card .card-content {
-    padding: 10px;
-    /* Potentially adjust if the new datetime element affects layout */
-}
-
-/* Your existing .task-image-preview and .task-image-preview.expanded styles */
-.task-image-preview {
-    object-fit: cover;
-    border-radius: 4px;
-    margin-top: 5px;
-    transition: max-width 0.3s ease, max-height 0.3s ease; /* Smooth transition */
- overflow: hidden; /* Ensure the image doesn't overflow during transition */
-}
-.task-image-preview.expanded {
-    max-width: 100%; /* Larger image when card is expanded */
-    max-height: 200px; /* Adjust as needed */
-}
-  .task-details img {
-  display: block;
-  margin: 0.5rem auto;   /* vertical gap + auto-horizontal centering */
-  max-width: 80%;        /* scale up to 80% of container width */
-  height: auto;          /* preserve aspect ratio */
-  }
-  /* Tab for the form */
-  #addTaskButton { /* Renamed from formTab to addTaskButton */
-    position: fixed;
-    bottom: 0; /* Adjust to your desired position from the bottom */
-    left: 50%;
-    transform: translateX(-50%);
-    width: 150px; /* Adjust the width as needed */
-    height: 40px; /* Adjust the height as needed */
-    background-color: #0d6efd; /* Bootstrap primary color */ /* You can change this */
-    color: white;
-    text-align: center;
-    line-height: 40px;
-    cursor: pointer;
- border: none; /* Remove default button border */
-    z-index: 1060; /* Higher than the form */
-    /* Trapezoid shape */
-    clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
-  }
-   #addTaskForm {
-    position: fixed;
-    bottom: 0; /* Start at the bottom of the screen */
-    left: 0;
-    right: 0; /* Ensure it stretches across the width */
-    width: 100%;
+  #addTaskForm {
+    transform: translateY(100%);
     transition: transform .3s ease-in-out;
- transform: translateY(100%); /* Initially hide the form completely below the viewport */
     z-index: 1050;
-  #formTab.hidden {
-      display: none;
-    }
+  }
+  #addTaskForm.show { transform: translateY(0); }
   /* Pastel backgrounds */
   .bg-blue-200   { background:#bfdbfe!important }
   .bg-pink-200   { background:#fbcfe8!important }
@@ -137,54 +53,58 @@
     <!-- Task cards will be injected here -->
   </div>
 
-<!-- Add Task Button (Trapezoid) -->
-<button id="addTaskButton" onclick="toggleForm()">Add Task</button>
-
-<!-- Slide-up Form -->
-<div id="addTaskForm" class="bg-dark shadow">
-  <div class="p-4"> <!-- Added padding here -->
-    <select id="taskCategory" class="form-select mb-3 bg-secondary text-white">
-      <option value="" disabled selected hidden>Select category</option>
-      <option value="event">Event</option>
-      <option value="daily">Daily</option>
-      <option value="project">Project</option>
-      <option value="personal">Personal</option>
-    </select>
-    <div id="formBody" class="d-none">
-      <div class="mb-2">
-        <label for="taskTitle" class="form-label text-white">Title</label>
-        <input id="taskTitle" class="form-control bg-secondary text-white" placeholder="Task Title">
-      </div>
-
-      <!-- Dynamic Fields -->
-      <div id="field-details" class="mb-2 d-none">
-        <label for="taskDetails" class="form-label text-white">Details</label>
-        <textarea id="taskDetails" class="form-control bg-secondary text-white" rows="2"></textarea>
-      </div>
-      <div id="field-date" class="mb-2 d-none">
-        <label for="taskDate" class="form-label text-white">Date</label>
-        <input type="date" id="taskDate" class="form-control bg-secondary text-white" />
-      </div>
-      <div id="field-time" class="mb-2 d-none">
-        <label for="taskTime" class="form-label text-white">Time</label>
-        <select id="taskTime" class="form-select bg-secondary text-white">
-          <option value="" disabled selected hidden>Select time</option>
-        </select>
-      </div>
-      <div id="field-due-date" class="mb-2 d-none">
-        <label for="taskDueDate" class="form-label text-white">Due Date</label>
-        <input type="date" id="taskDueDate" class="form-control bg-secondary text-white" />
-      </div>
-      <div id="field-image" class="mb-2 d-none">
-        <label for="taskImage" class="form-label text-white">Image Upload</label>
-        <input type="file" id="taskImage" accept="image/*" class="form-control bg-secondary text-white" />
-      </div>
-
-      <!-- Add Task Button -->
-      <button onclick="addTask()" class="btn btn-success w-100 mt-2">Add Task</button>
+ <!-- Slide-up Form -->
+<div id="addTaskForm" class="position-fixed bottom-0 start-0 w-100 bg-dark p-4 shadow">
+  <select id="taskCategory" class="form-select mb-3 bg-secondary text-white">
+    <option value="" disabled selected>Select category</option>
+    <option value="event">Event</option>
+    <option value="daily">Daily</option>
+    <option value="project">Project</option>
+    <option value="personal">Personal</option>
+  </select>
+  <div id="formBody" class="d-none">
+    <div class="mb-2">
+      <label for="taskTitle" class="form-label text-white">Title</label>
+      <input id="taskTitle" class="form-control bg-secondary text-white" placeholder="Task Title">
     </div>
-  </div>
-</div>
+
+        <!-- Dynamic Fields -->
+        <div id="field-details" class="mb-2 d-none">
+          <label for="taskDetails" class="form-label text-white">Details</label>
+          <textarea id="taskDetails" class="form-control bg-secondary text-white" rows="2"></textarea>
+        </div>
+        <div id="field-date" class="mb-2 d-none">
+          <label for="taskDate" class="form-label text-white">Date</label>
+          <input type="date" id="taskDate" class="form-control bg-secondary text-white" />
+        </div>
+        <div id="field-time" class="mb-2 d-none">
+          <label for="taskTime" class="form-label text-white">Time</label>
+          <select id="taskTime" class="form-select bg-secondary text-white">
+            <option value="" disabled selected>Select time</option>
+          </select>
+        </div>        
+        <div id="field-due-date" class="mb-2 d-none">
+          <label for="taskDueDate" class="form-label text-white">Due Date</label>
+          <input type="date" id="taskDueDate" class="form-control bg-secondary text-white" />
+        </div>
+        <div id="field-image" class="mb-2 d-none">
+          <label for="taskImage" class="form-label text-white">Image Upload</label>
+          <input type="file" id="taskImage" accept="image/*" class="form-control bg-secondary text-white" />
+        </div>
+
+        <!-- Add Task Button -->
+        <button onclick="addTask()" class="btn btn-success w-100 mt-2">Add Task</button>
+      </div>
+    </div>
+  </div>  
+
+
+  <!-- Floating Add Button -->
+  <button id="toggleFormBtn" onclick="toggleForm()"
+          class="btn btn-success position-fixed rounded-circle shadow-lg p-1 fs-3"
+          style="bottom:1.5rem; right:1.5rem;">
+    +
+  </button>
 
 <!-- App entry (must be an ES‑module) -->
 <script type="module" src="app.js"></script>
