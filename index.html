@@ -73,7 +73,7 @@
   /* Tab for the form */
   #formTab {
     position: fixed;
-    bottom: 10px; /* Adjust to your desired position from the bottom */
+    bottom: 0; /* Adjust to your desired position from the bottom */
     left: 50%;
     transform: translateX(-50%);
     width: 150px; /* Adjust the width as needed */
@@ -87,10 +87,11 @@
     /* Trapezoid shape */
     clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
   }
-  #addTaskForm {
- position: fixed;
-    bottom: 0;
+   #addTaskForm {
+    position: fixed;
+    bottom: 0; /* Start at the bottom of the screen */
     left: 0;
+    right: 0; /* Ensure it stretches across the width */
     width: 100%;
     transition: transform .3s ease-in-out;
  transform: translateY(100%); /* Initially hide the form completely */
@@ -137,11 +138,11 @@
     <!-- Task cards will be injected here -->
   </div>
 
- <!-- Slide-up Form -->
- <div id="addTaskForm" class="bg-dark p-4 shadow">
-  <!-- Removed the button that was previously here -->
-  <button id="toggleFormBtn" class="btn btn-secondary w-100 mb-3" onclick="toggleForm()">Add New Task</button>
-
+<!-- Slide-up Form -->
+<div id="addTaskForm" class="bg-dark shadow">
+  <!-- Form Tab - Attached to the top of the form -->
+  <div id="formTab" onclick="toggleForm()">Add Task</div>
+  <div id="formContent" class="p-4"> <!-- Added padding here -->
   <div id="formContent" class="d-none">
     <select id="taskCategory" class="form-select mb-3 bg-secondary text-white">
       <option value="" disabled selected hidden>Select category</option>
@@ -185,9 +186,6 @@
     </div>
   </div>
 </div>
-
-<!-- Form Tab -->
-<div id="formTab" onclick="toggleForm()">Add Task</div>
 
 <!-- App entry (must be an ES‑module) -->
 <script type="module" src="app.js"></script>
