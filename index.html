@@ -10,19 +10,6 @@
   rel="stylesheet"
 />
 <link rel="stylesheet" href="style.css">
-<style>
-  #addTaskForm {
-    transform: translateY(100%);
-    transition: transform .3s ease-in-out;
-    z-index: 1050;
-  }
-  #addTaskForm.show { transform: translateY(0); }
-  /* Pastel backgrounds */
-  .bg-blue-200   { background:#bfdbfe!important }
-  .bg-pink-200   { background:#fbcfe8!important }
-  .bg-orange-200 { background:#fed7aa!important }
-  .bg-purple-200 { background:#e9d5ff!important }
-</style>
 </head>
 <!-- =========  HEADER  ========= -->
 <header class="bg-dark text-white p-3 d-flex flex-column flex-md-row align-items-start align-items-md-center gap-3">
@@ -103,8 +90,7 @@
 
     <!-- Floating Add Button -->
     <button id="toggleFormBtn" onclick="toggleForm()"
-            class="btn btn-success position-fixed rounded-circle shadow-lg p-1 fs-3 toggle-button"
-            style="bottom:1.5rem; right:1.5rem;">
+            class=\"btn btn-success position-fixed rounded-circle shadow-lg p-1 fs-3 toggle-button\">\
       +
     </button>
   </div>
