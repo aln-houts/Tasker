@@ -21,10 +21,81 @@
   .bg-pink-200   { background:#fbcfe8!important }
   .bg-orange-200 { background:#fed7aa!important }
   .bg-purple-200 { background:#e9d5ff!important }
+
+  .task-details {
+    color: #111 !important;         /* Make all text black */
+    background: transparent;
+  }
+  .task-details p,
+  .task-details label,
+  .task-details strong {
+    margin-bottom: 2px !important;  /* Reduce spacing */
+    color: #111 !important;         /* Ensure black text */
+    font-size: 1em;
+  }
+  .task-details input,
+  .task-details textarea,
+  .task-details select {
+    color: #111 !important;
+    background: #f8fafc !important; /* Optional: light background for contrast */
+  }
+  .form-container {
+    position: relative; /* Needed for absolute positioning of the button */
+    /* Add other styling for your form container if necessary */
+}
+
+.toggle-button {
+    position: absolute;
+    top: 0;
+    left: 50%; /* Center the trapezoid horizontally */
+    transform: translateX(-50%); /* Further center the trapezoid */
+    z-index: 10; /* Ensure the button is above the form */
+    width: 100px; /* Adjust width as needed */
+    height: 30px; /* Adjust height as needed */
+    background-color: #f0f0f0; /* Example background color */
+    border: 1px solid #ccc; /* Example border */
+    border-bottom: none; /* Remove bottom border for trapezoid effect */
+
+    /* Creating the trapezoid shape using clip-path */
+    clip-path: polygon(10% 0, 90% 0, 100% 100%, 0% 100%);
+
+    /* Optional: Add transitions or other styles for hover/active states */
+    cursor: pointer;
+    text-align: center;
+    line-height: 30px; /* Vertically center text if any */
+}
+
+/* You might need to add padding to the top of the form itself
+   to prevent content from being hidden behind the button */
+.form-container form {
+    padding-top: 30px; /* Match the height of the button */
+    /* Add other form styling */
+}
+.fs-5 {
+  color: #111 !important; /* Ensure black text */
+}
+
+/* Make card header flex and allow wrapping */
+.task-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap; /* Allow wrapping */
+  gap: 0.5rem;
+}
+
+/* Allow the title to wrap and not shrink the toggle */
+.task-title {
+  flex: 1 1 0;
+  min-width: 0;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
 </style>
 </head>
 <!-- =========  HEADER  ========= -->
-<header class="bg-dark text-white p-3 d-flex flex-column flex-md-row align-items-start align-items-md-center gap-3">
+<header class="bg-dark p-3 d-flex flex-column flex-md-row align-items-start align-items-md-center gap-3">
   <!-- App title -->
   <h1 class="h4 mb-0 flex-shrink-0">Tasker</h1>
   <!-- Backup / Restore controls -->
@@ -54,7 +125,7 @@
   </div>
 
   <!-- Slide-up Form -->
- <div id="addTaskForm" class="show position-fixed bottom-0 start-0 w-100 bg-dark p-4 shadow">
+ <form id="addTaskForm" class="show position-fixed bottom-0 start-0 w-100 bg-dark p-4 shadow">
    <select id="taskCategory" class="form-select mb-3 bg-secondary text-white">
      <option value="" selected>add new task/close form</option>
      <option value="event">Event</option>
@@ -96,7 +167,7 @@
          <button onclick="addTask()" class="btn btn-success w-100 mt-2">Add Task</button>
        </div>
      </div>
-   </div>
+   </form>
 
 <!-- App entry (must be an ES‑module) -->
 <script type="module" src="app.js"></script>

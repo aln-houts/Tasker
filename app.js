@@ -46,8 +46,9 @@ function updateFields(cat = '') {
 
 function toggleForm() {
   addForm.classList.add('show'); // Always show the form
+  addForm.reset();               // Reset all form fields FIRST
   sel.value = '';                // Reset category dropdown
-  addForm.reset();               // Reset all form fields
+  sel.dispatchEvent(new Event('change')); // Fire change event to update fields
   updateFields();                // Hide all dynamic fields
 }
 
@@ -75,12 +76,9 @@ function renderTaskCard(task) {
   card.dataset.id = task.id;
   card.dataset.category = task.category;
 
-  // *** NEW: Determine summary text for date/time to show on unexpanded card ***
+  // Determine summary text for date/time to show on unexpanded card
   let summaryText = '';
-  // Using a distinct style for the summary to make it subtle.
-  // You can move this to your style.css under a class like '.task-datetime-summary'
-  const summaryStyle = 'font-size: 0.85em; color: #212529; margin-top: 5px;'; // Using a standard Bootstrap dark text color
-
+  const summaryStyle = 'font-size: 0.85em; color: #212529; margin-top: 5px;';
   if (task.category === 'event') {
     let eventSummaryParts = [];
     if (task.date) eventSummaryParts.push(`Date: ${formatDate(task.date)}`);
@@ -93,31 +91,29 @@ function renderTaskCard(task) {
   } else if (task.category === 'daily' && task.time) {
     summaryText = `Time: ${task.time}`;
   }
-
   const summaryHtml = summaryText ? `<div class="task-datetime-summary" style="${summaryStyle}">${summaryText}</div>` : '';
 
-  // *** MODIFIED: Inject summaryHtml into the card structure ***
+  // Only keep the original card structure with the arrow toggle and black title
   card.innerHTML = `
-    <div class="d-flex justify-content-between align-items-center">
-      <span class="fs-5">${task.title}</span>
+    <div class="d-flex justify-content-between align-items-center task-card-header">
+      <span class="fs-5 task-title" style="color:#111 !important;">${task.title}</span>
       <div>
         <button class="btn btn-link btn-sm text-secondary" onclick="toggleDetails(this)">➤</button>
         <button class="btn btn-dark btn-sm ms-2" onclick="completeTask(this)">Done</button>
       </div>
     </div>
-    ${summaryHtml} 
+    ${summaryHtml}
     <div class="task-details mt-2 d-none text-white"></div>
   `;
 
   const details = card.querySelector('.task-details');
-  if (details) { // Ensure details div is found
-    // Populate details (for expanded view)
+  if (details) {
     ['details','date','time','dueDate','imageData'].forEach(k => {
       if (!task[k]) return;
       if (k === 'imageData') {
         const img = document.createElement('img');
         img.src = task[k];
-        img.className = 'img-fluid rounded mb-2'; // 'img-fluid' makes it responsive and potentially larger in details
+        img.className = 'img-fluid rounded mb-2';
         details.appendChild(img);
       } else {
         const label = k === 'dueDate' ? 'Due Date'
@@ -127,7 +123,6 @@ function renderTaskCard(task) {
         strong.textContent = `${label}: `;
         p.appendChild(strong);
 
-        // Format dates within the details section as well for consistency
         let value = task[k];
         if ((k === 'date' || k === 'dueDate') && task[k]) {
             value = formatDate(task[k]);
@@ -149,7 +144,7 @@ function addTask() {
   const title = document.getElementById('taskTitle').value.trim();
   const cat   = sel.value;
   if (!title || !cat) {
-    alert('Please provide a title and select a category.'); // Added simple validation feedback
+    alert('Please provide a title and select a category.');
     return;
   }
 
@@ -168,10 +163,10 @@ function addTask() {
   const finish = finalTask => {
     addTaskToStorage(finalTask);
     renderAllTasks();
-    toggleForm(); // This will now also reset the form
+    toggleForm(); // This resets the form fields and category
   };
 
-  if (file && categoryFields[cat]?.includes('image')) { // Only process image if category supports it
+  if (file && categoryFields[cat]?.includes('image')) {
     const reader = new FileReader();
     reader.onload = e => finish({ ...task, imageData: e.target.result });
     reader.readAsDataURL(file);
