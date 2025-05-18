@@ -45,18 +45,10 @@ function updateFields(cat = '') {
 }
 
 function toggleForm() {
-  addForm.classList.toggle('show');
-  sel.value = ''; // Reset category dropdown
-  addForm.reset(); // Reset all form fields
-  updateFields(); // Update visible fields for empty category
-}
-
-// ――― helper: clear + keep form open ―――
-function resetForm() {
-  addForm.reset();     // wipe all inputs
-  sel.value = '';      // blank the dropdown
-  updateFields();      // hide dynamic fields
-  addForm.classList.add('show'); // ensure form stays visible
+  addForm.classList.add('show'); // Always show the form
+  sel.value = '';                // Reset category dropdown
+  addForm.reset();               // Reset all form fields
+  updateFields();                // Hide all dynamic fields
 }
 
 function getColor(cat) {
@@ -176,7 +168,7 @@ function addTask() {
   const finish = finalTask => {
     addTaskToStorage(finalTask);
     renderAllTasks();
-    resetForm();   // clear inputs but leave form showing
+    toggleForm(); // This will now also reset the form
   };
 
   if (file && categoryFields[cat]?.includes('image')) { // Only process image if category supports it
@@ -200,22 +192,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   if (changed) saveTasks(tasks);
 
-sel.addEventListener('change', () => {
-  updateFields(sel.value); // show relevant fields BEFORE wiping inputs
-  Array.from(addForm.elements).forEach(el => {
-    if (el === sel) return; // skip the dropdown
-    if (el.type === 'checkbox' || el.type === 'radio') {
-      el.checked = false;
-    } else {
-      el.value = '';
-    }
-  });
-});
-
-
+  sel.addEventListener('change', () => updateFields(sel.value)); // Keep the existing change listener
   renderAllTasks();
 });
-
 
 // Function to toggle details visibility
 function toggleDetails(btn) {
