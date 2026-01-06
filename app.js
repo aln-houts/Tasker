@@ -1,252 +1,178 @@
-// app.js  – final stable module
-// ----------------------------------------------
-import {
-  getTasks,
-  addTaskToStorage,
-  saveTasks,
-  backupTasks,
-  importTasksFromFile
-} from './js/storage.js';     // adjust only if you move storage.js
+/* Bubble To-Do (Messaging UI)
+ * - Composer pinned bottom like Messenger
+ * - Bubbles with check button
+ * - Complete moves to Completed
+ * - LocalStorage persistence
+ */
 
-/* ---------- element handles & constants -------- */
-const sel         = document.getElementById('taskCategory');
-const formBody    = document.getElementById('formBody');
-const addForm     = document.getElementById('addTaskForm');
-const timeSel     = document.getElementById('taskTime');
-const stack       = document.getElementById('taskStack');
-const exportBtn   = document.getElementById('exportBtn');
-const importBtn   = document.getElementById('importBtn');
-const importInput = document.getElementById('importInput');
+const STORAGE_KEY = "bubble_todo_v2";
 
-const categoryFields = {
-  event:   ['details','date','time','image'],
-  daily:   ['details','time'],
-  project: ['details','due-date'],
-  personal:['details','date']
-};
+const activeListEl = document.getElementById("activeList");
+const completedListEl = document.getElementById("completedList");
+const composerEl = document.getElementById("composer");
+const inputEl = document.getElementById("taskInput");
+const clearCompletedBtn = document.getElementById("clearCompletedBtn");
+const threadEl = document.querySelector(".thread");
 
-/* ------------- one‑time UI prep ---------------- */
-if (timeSel) {
-  timeSel.innerHTML = `<option value="" disabled selected>Select time</option>` +
-    ['AM','PM'].flatMap(p => Array.from({length:12}, (_,i)=>i+1)
-      .map(h => `<option>${h}:00 ${p}</option>`))
-    .join('');
-}
+let state = loadState();
 
-/* ---------- helpers exposed to window ---------- */
-function updateFields(cat = '') {
-  formBody.classList.toggle('d-none', !cat);
-  Object.values(categoryFields).flat().forEach(f =>
-    document.getElementById(`field-${f}`)?.classList.add('d-none')
-  );
-  (categoryFields[cat] || []).forEach(f =>
-    document.getElementById(`field-${f}`)?.classList.remove('d-none')
-  );
-}
+render({ scrollToTop: false, scrollToComposer: true });
 
-function toggleForm() {
-  addForm.classList.add('show'); // Always show the form
-  addForm.reset();               // Reset all form fields FIRST
-  sel.value = '';                // Reset category dropdown
-  sel.dispatchEvent(new Event('change')); // Fire change event to update fields
-  updateFields();                // Hide all dynamic fields
-}
+composerEl.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const text = (inputEl.value || "").trim();
+  if (!text) return;
 
-function getColor(cat) {
-  return { event:'blue', daily:'pink', project:'orange', personal:'purple' }[cat] || 'gray';
-}
-
-// *** NEW: Helper function to format date strings ***
-function formatDate(dateString) {
-  if (!dateString) return ''; // Return empty if no date string
-  // Check if the dateString is in YYYY-MM-DD format (common for input type="date")
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateString)) return dateString; // Return original if not in expected format
-
-  const dateObj = new Date(dateString + 'T00:00:00'); // Add time part to avoid potential timezone shifts affecting the day
-  return dateObj.toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
+  state.active.unshift({
+    id: cryptoId(),
+    text,
+    createdAt: Date.now(),
   });
-}
 
-function renderTaskCard(task) {
-  const card = document.createElement('div');
-  card.className = `task-card p-3 mb-3 rounded shadow bg-${getColor(task.category)}-200`;
-  card.dataset.id = task.id;
-  card.dataset.category = task.category;
+  saveState(state);
+  inputEl.value = "";
+  render({ justAdded: true, scrollToComposer: true });
+  inputEl.focus();
+});
 
-  // Determine summary text for date/time to show on unexpanded card
-  let summaryText = '';
-  const summaryStyle = 'font-size: 0.85em; color: #212529; margin-top: 5px;';
-  if (task.category === 'event') {
-    let eventSummaryParts = [];
-    if (task.date) eventSummaryParts.push(`Date: ${formatDate(task.date)}`);
-    if (task.time) eventSummaryParts.push(`Time: ${task.time}`);
-    summaryText = eventSummaryParts.join(', ');
-  } else if (task.category === 'project' && task.dueDate) {
-    summaryText = `Due: ${formatDate(task.dueDate)}`;
-  } else if (task.category === 'personal' && task.date) {
-    summaryText = `Date: ${formatDate(task.date)}`;
-  } else if (task.category === 'daily' && task.time) {
-    summaryText = `Time: ${task.time}`;
-  }
-  const summaryHtml = summaryText ? `<div class="task-datetime-summary" style="${summaryStyle}">${summaryText}</div>` : '';
+clearCompletedBtn.addEventListener("click", () => {
+  if (state.completed.length === 0) return;
+  state.completed = [];
+  saveState(state);
+  render({ scrollToComposer: false });
+});
 
-  // Only keep the original card structure with the arrow toggle and black title
-  card.innerHTML = `
-    <div class="d-flex justify-content-between align-items-center task-card-header">
-      <span class="fs-5 task-title" style="color:#111 !important;">${task.title}</span>
-      <div>
-        <button class="btn btn-link btn-sm text-secondary" onclick="toggleDetails(this)">➤</button>
-        <button class="btn btn-dark btn-sm ms-2" onclick="completeTask(this)">Done</button>
-      </div>
-    </div>
-    ${summaryHtml}
-    <div class="task-details mt-2 d-none text-white"></div>
-  `;
+function render(opts = {}) {
+  activeListEl.innerHTML = "";
+  completedListEl.innerHTML = "";
 
-  const details = card.querySelector('.task-details');
-  if (details) {
-    ['details','date','time','dueDate','imageData'].forEach(k => {
-      if (!task[k]) return;
-      if (k === 'imageData') {
-        const img = document.createElement('img');
-        img.src = task[k];
-        img.className = 'img-fluid rounded mb-2';
-        details.appendChild(img);
-      } else {
-        const label = k === 'dueDate' ? 'Due Date'
-                      : k.charAt(0).toUpperCase() + k.slice(1);
-        const p = document.createElement('p');
-        const strong = document.createElement('strong');
-        strong.textContent = `${label}: `;
-        p.appendChild(strong);
-
-        let value = task[k];
-        if ((k === 'date' || k === 'dueDate') && task[k]) {
-            value = formatDate(task[k]);
-        }
-        p.appendChild(document.createTextNode(value));
-        details.appendChild(p);
-      }
-    });
-  }
-  stack.appendChild(card);
-}
-
-function renderAllTasks() {
-  stack.innerHTML = '';
-  getTasks().forEach(renderTaskCard);
-}
-
-function addTask() {
-  const title = document.getElementById('taskTitle').value.trim();
-  const cat   = sel.value;
-  if (!title || !cat) {
-    alert('Please provide a title and select a category.');
-    return;
-  }
-
-  const task = {
-    title,
-    category : cat,
-    details  : document.getElementById('taskDetails')?.value || '',
-    date     : document.getElementById('taskDate')?.value    || '',
-    time     : document.getElementById('taskTime')?.value    || '',
-    dueDate  : document.getElementById('taskDueDate')?.value || '',
-    id       : crypto.randomUUID(),
-    created  : new Date().toISOString()
-  };
-
-  const file = document.getElementById('taskImage')?.files[0];
-  const finish = finalTask => {
-    addTaskToStorage(finalTask);
-    renderAllTasks();
-    toggleForm(); // This resets the form fields and category
-  };
-
-  if (file && categoryFields[cat]?.includes('image')) {
-    const reader = new FileReader();
-    reader.onload = e => finish({ ...task, imageData: e.target.result });
-    reader.readAsDataURL(file);
+  // Active
+  if (state.active.length === 0) {
+    activeListEl.appendChild(makePlaceholder("No tasks yet. Type one below."));
   } else {
-    finish(task);
+    for (let i = 0; i < state.active.length; i++) {
+      const item = state.active[i];
+      const row = document.createElement("div");
+      row.className = "row";
+      const bubble = makeBubble(item, { completed: false });
+
+      if (opts.justAdded && i === 0) bubble.classList.add("pop-in");
+
+      row.appendChild(bubble);
+      activeListEl.appendChild(row);
+    }
+  }
+
+  // Completed
+  if (state.completed.length === 0) {
+    completedListEl.appendChild(makePlaceholder("Nothing completed yet."));
+  } else {
+    for (const item of state.completed) {
+      const row = document.createElement("div");
+      row.className = "row";
+      const bubble = makeBubble(item, { completed: true });
+      row.appendChild(bubble);
+      completedListEl.appendChild(row);
+    }
+  }
+
+  // keep view near bottom like messaging apps
+  if (opts.scrollToComposer) {
+    scrollThreadToBottom();
   }
 }
 
-/* ------------ event bindings once DOM ready ---- */
-document.addEventListener('DOMContentLoaded', () => {
-  let tasks = getTasks();
-  let changed = false;
-  tasks.forEach(t => {
-    if (!t.id) {
-      t.id = crypto.randomUUID();
-      changed = true;
+function makeBubble(item, { completed }) {
+  const wrap = document.createElement("div");
+  wrap.className = "bubble";
+  wrap.setAttribute("role", "listitem");
+
+  const text = document.createElement("div");
+  text.className = "text";
+  text.textContent = item.text;
+
+  const actions = document.createElement("div");
+  actions.className = "actions";
+
+  const check = document.createElement("button");
+  check.className = "check";
+  check.type = "button";
+  check.setAttribute("aria-label", completed ? "Restore task" : "Complete task");
+  check.title = completed ? "Restore" : "Complete";
+  check.textContent = completed ? "↩" : "✓";
+
+  check.addEventListener("click", () => {
+    if (!completed) {
+      wrap.classList.add("slide-out");
+      setTimeout(() => completeTask(item.id), 140);
+    } else {
+      restoreTask(item.id);
     }
   });
-  if (changed) saveTasks(tasks);
 
-  sel.addEventListener('change', () => updateFields(sel.value)); // Keep the existing change listener
-  renderAllTasks();
-});
+  actions.appendChild(check);
+  wrap.appendChild(text);
+  wrap.appendChild(actions);
 
-// Function to toggle details visibility
-function toggleDetails(btn) {
-  const cardDetails = btn.closest('.task-card').querySelector('.task-details');
-  if (cardDetails) {
-    cardDetails.classList.toggle('d-none');
-    // Change arrow direction
-    btn.textContent = cardDetails.classList.contains('d-none') ? '➤' : '▼';
+  return wrap;
+}
+
+function makePlaceholder(msg) {
+  const p = document.createElement("div");
+  p.style.color = "rgba(167,176,192,.80)";
+  p.style.fontSize = "14px";
+  p.style.padding = "6px 6px 2px";
+  p.textContent = msg;
+  return p;
+}
+
+function completeTask(id) {
+  const idx = state.active.findIndex(t => t.id === id);
+  if (idx === -1) return;
+
+  const [item] = state.active.splice(idx, 1);
+  state.completed.unshift({ ...item, completedAt: Date.now() });
+
+  saveState(state);
+  render({ scrollToComposer: false });
+}
+
+function restoreTask(id) {
+  const idx = state.completed.findIndex(t => t.id === id);
+  if (idx === -1) return;
+
+  const [item] = state.completed.splice(idx, 1);
+  state.active.unshift({ id: item.id, text: item.text, createdAt: item.createdAt });
+
+  saveState(state);
+  render({ scrollToComposer: true });
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { active: [], completed: [] };
+    const parsed = JSON.parse(raw);
+    return {
+      active: Array.isArray(parsed.active) ? parsed.active : [],
+      completed: Array.isArray(parsed.completed) ? parsed.completed : [],
+    };
+  } catch {
+    return { active: [], completed: [] };
   }
 }
 
-// Function to mark a task as complete and remove it
-function completeTask(btn) {
-  const card = btn.closest('.task-card');
-  if (!card) return;
-  const id = card.dataset.id;
-
-  card.style.transition = 'opacity .5s ease-out';
-  card.style.opacity = '0';
-  setTimeout(() => {
-    card.remove();
-    const remaining = getTasks().filter(t => t.id !== id);
-    saveTasks(remaining);
-  }, 500);
+function saveState(next) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
 }
 
-function filterTasks(cat = 'all') {
-  Array.from(stack.querySelectorAll('.task-card')).forEach(card => {
-    const match = cat === 'all' || card.dataset.category === cat;
-    card.classList.toggle('d-none', !match);
-  });
+function cryptoId() {
+  if (window.crypto && typeof crypto.randomUUID === "function") return crypto.randomUUID();
+  return "id_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
 }
 
-// Expose functions to global scope for inline HTML event handlers
-window.toggleForm    = toggleForm;
-window.addTask       = addTask;
-// window.renderTaskCard = renderTaskCard; // Not typically called from HTML directly
-window.toggleDetails = toggleDetails;
-window.completeTask  = completeTask;
-window.filterTasks   = filterTasks;
-
-
-/* --------- backup / restore buttons ------------ */
-exportBtn?.addEventListener('click',  () => backupTasks());
-importBtn?.addEventListener('click',  () => importInput.click());
-importInput?.addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  importTasksFromFile(file)
-    .then(tasks => {
-      // Instead of replacing all tasks, you might want to merge or add.
-      // For now, it replaces, which means existing tasks are wiped on import.
-      // To add/merge: saveTasks([...getTasks(), ...tasks.map(t => ({...t, id: crypto.randomUUID()}))]);
-      saveTasks(tasks); // This replaces existing tasks with imported ones.
-      renderAllTasks(); // Re-render all tasks from the newly saved set.
-      alert('Tasks imported successfully!');
-    })
-    .catch(err => alert('Import failed: ' + err.message));
-    e.target.value = null; // Reset file input
-});
+function scrollThreadToBottom() {
+  // thread has padding-bottom to avoid composer overlap,
+  // so bottom is reachable like a chat app
+  threadEl.scrollTop = threadEl.scrollHeight;
+}
