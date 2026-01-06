@@ -1,175 +1,59 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>To-Do Stack</title>
-  <!-- Bootstrap CSS -->
-  <link
-  href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-  rel="stylesheet"
-/>
-<style>
-  #addTaskForm {
-    transform: translateY(100%);
-    transition: transform .3s ease-in-out;
-    z-index: 1050;
-  }
-  #addTaskForm.show { transform: translateY(0); }
-  /* Pastel backgrounds */
-  .bg-blue-200   { background:#bfdbfe!important }
-  .bg-pink-200   { background:#fbcfe8!important }
-  .bg-orange-200 { background:#fed7aa!important }
-  .bg-purple-200 { background:#e9d5ff!important }
-
-  .task-details {
-    color: #111 !important;         /* Make all text black */
-    background: transparent;
-  }
-  .task-details p,
-  .task-details label,
-  .task-details strong {
-    margin-bottom: 2px !important;  /* Reduce spacing */
-    color: #111 !important;         /* Ensure black text */
-    font-size: 1em;
-  }
-  .task-details input,
-  .task-details textarea,
-  .task-details select {
-    color: #111 !important;
-    background: #f8fafc !important; /* Optional: light background for contrast */
-  }
-  .form-container {
-    position: relative; /* Needed for absolute positioning of the button */
-    /* Add other styling for your form container if necessary */
-}
-
-.toggle-button {
-    position: absolute;
-    top: 0;
-    left: 50%; /* Center the trapezoid horizontally */
-    transform: translateX(-50%); /* Further center the trapezoid */
-    z-index: 10; /* Ensure the button is above the form */
-    width: 100px; /* Adjust width as needed */
-    height: 30px; /* Adjust height as needed */
-    background-color: #f0f0f0; /* Example background color */
-    border: 1px solid #ccc; /* Example border */
-    border-bottom: none; /* Remove bottom border for trapezoid effect */
-
-    /* Creating the trapezoid shape using clip-path */
-    clip-path: polygon(10% 0, 90% 0, 100% 100%, 0% 100%);
-
-    /* Optional: Add transitions or other styles for hover/active states */
-    cursor: pointer;
-    text-align: center;
-    line-height: 30px; /* Vertically center text if any */
-}
-
-/* You might need to add padding to the top of the form itself
-   to prevent content from being hidden behind the button */
-.form-container form {
-    padding-top: 30px; /* Match the height of the button */
-    /* Add other form styling */
-}
-.fs-5 {
-  color: #111 !important; /* Ensure black text */
-}
-
-/* Make card header flex and allow wrapping */
-.task-card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap; /* Allow wrapping */
-  gap: 0.5rem;
-}
-
-/* Allow the title to wrap and not shrink the toggle */
-.task-title {
-  flex: 1 1 0;
-  min-width: 0;
-  word-break: break-word;
-  overflow-wrap: break-word;
-  white-space: normal;
-}
-</style>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bubble To-Do</title>
+  <link rel="stylesheet" href="./styles.css" />
 </head>
-<!-- =========  HEADER  ========= -->
-<header class="bg-dark p-3 d-flex flex-column flex-md-row align-items-start align-items-md-center gap-3">
-  <!-- App title -->
-  <h1 class="h4 mb-0 flex-shrink-0">Tasker</h1>
-  <!-- Backup / Restore controls -->
-  <div class="d-flex flex-wrap align-items-center gap-2">
-    <button id="exportBtn"  class="btn btn-outline-light btn-sm">Backup Tasks</button>
+<body>
+  <main class="app" aria-label="Bubble To-Do App">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="app-title">To-Do</div>
+        <div class="app-subtitle">chat-style checklist</div>
+      </div>
 
-    <input  type="file" id="importInput" accept=".json" hidden />
-    <button id="importBtn"  class="btn btn-outline-light btn-sm">Restore Tasks</button>
-  </div>
-  <!-- Category Filter Bar -->
-  <div id="filterBar" class="btn-group btn-group-sm ms-md-auto" role="group">
-    <button class="btn btn-outline-light"    onclick="filterTasks('all')">All</button>
-    <button class="btn btn-outline-primary"  onclick="filterTasks('event')">Events</button>
-    <button class="btn btn-outline-primary"     onclick="filterTasks('daily')">Daily</button>
-    <button class="btn btn-outline-primary"  onclick="filterTasks('project')">Projects</button>
-    <button class="btn btn-outline-primary"   onclick="filterTasks('personal')">Personal</button>
-  </div>
+      <div class="topbar-actions">
+        <button id="clearCompletedBtn" class="ghost" type="button" title="Clear completed">
+          Clear Completed
+        </button>
+      </div>
+    </header>
 
-</header>
-<!-- ======== /HEADER ========= -->
+    <section class="thread" aria-label="To-do thread">
+      <div class="thread-inner">
+        <div class="section-title">Active</div>
+        <div id="activeList" class="bubble-list" role="list"></div>
 
-<body class="bg-dark text-white vh-100 d-flex flex-column overflow-hidden">
+        <div class="divider"></div>
 
-  <!-- Task List -->
-  <div id="taskStack" class="flex-grow-1 overflow-auto p-4 d-flex flex-column gap-1">
-    <!-- Task cards will be injected here -->
-  </div>
+        <div class="section-title completed-title">Completed</div>
+        <div id="completedList" class="bubble-list completed" role="list"></div>
+      </div>
+    </section>
 
-  <!-- Slide-up Form -->
- <form id="addTaskForm" class="show position-fixed bottom-0 start-0 w-100 bg-dark p-4 shadow">
-   <select id="taskCategory" class="form-select mb-3 bg-secondary text-white">
-     <option value="" selected>add new task/close form</option>
-     <option value="event">Event</option>
-     <option value="daily">Daily</option>
-     <option value="project">Project</option>
-     <option value="personal">Personal</option>
-   </select>
-   <div id="formBody" class="d-none">
-     <div class="mb-2">
-       <label for="taskTitle" class="form-label text-white">Title</label>
-       <input id="taskTitle" class="form-control bg-secondary text-white" placeholder="Task Title">
-     </div>
+    <form id="composer" class="composer" autocomplete="off">
+      <label class="sr-only" for="taskInput">New task</label>
 
-        <!-- Dynamic Fields -->
-         <div id="field-details" class="mb-2 d-none">
-           <label for="taskDetails" class="form-label text-white">Details</label>
-           <textarea id="taskDetails" class="form-control bg-secondary text-white" rows="2"></textarea>
-        </div>
-         <div id="field-date" class="mb-2 d-none">
-           <label for="taskDate" class="form-label text-white">Date</label>
-           <input type="date" id="taskDate" class="form-control bg-secondary text-white" />
-        </div>
-        <div id="field-time" class="mb-2 d-none">
-          <label for="taskTime" class="form-label text-white">Time</label>
-          <select id="taskTime" class="form-select bg-secondary text-white">
-            <option value="" disabled selected>Select time</option>
-          </select>
-        </div>        
-        <div id="field-due-date" class="mb-2 d-none">
-          <label for="taskDueDate" class="form-label text-white">Due Date</label>
-          <input type="date" id="taskDueDate" class="form-control bg-secondary text-white" />
-        </div>
-        <div id="field-image" class="mb-2 d-none">
-          <label for="taskImage" class="form-label text-white">Image Upload</label>
-          <input type="file" id="taskImage" accept="image/*" class="form-control bg-secondary text-white" />
-        </div>
+      <div class="composer-shell">
+        <input
+          id="taskInput"
+          name="task"
+          type="text"
+          placeholder="Message…"
+          maxlength="240"
+          inputmode="text"
+          enterkeyhint="send"
+          required
+        />
+        <button class="send" type="submit" aria-label="Send">
+          ➤
+        </button>
+      </div>
+    </form>
+  </main>
 
-        <!-- Add Task Button -->
-         <button onclick="addTask()" class="btn btn-success w-100 mt-2">Add Task</button>
-       </div>
-     </div>
-   </form>
-
-<!-- App entry (must be an ES‑module) -->
-<script type="module" src="app.js"></script>
+  <script src="./app.js"></script>
 </body>
 </html>
