@@ -1,29 +1,46 @@
 // js/scheduler.js
-import { getTasks, saveTasks, addTaskToStorage } from './storage.js';
+// Midnight cleanup scheduler for daily tasks
 
-export function scheduleMidnightCleanup(renderTaskCard) {
-  const now   = new Date();
-  const next  = new Date(now);
-  next.setHours(24, 0, 0, 0);          // next local midnight
+import { getTasks, saveTasks, getDailyTemplates } from './storage.js';
+
+export function scheduleMidnightCleanup() {
+  const now = new Date();
+  const next = new Date(now);
+  next.setHours(24, 0, 0, 0);
   const delay = next - now;
 
   setTimeout(() => {
-    dailyCleanup(renderTaskCard);      // run once at midnight
-    scheduleMidnightCleanup(renderTaskCard); // schedule tomorrow
+    dailyCleanup();
+    scheduleMidnightCleanup(); // schedule tomorrow
   }, delay);
 }
 
-function dailyCleanup(renderTaskCard) {
-  /* ----- 1. remove today's Daily tasks ----- */
-  const tasks      = getTasks();
-  const remaining  = tasks.filter(t => t.category !== 'daily');
-  saveTasks(remaining);
+function dailyCleanup() {
+  const state = getTasks();
 
-  /* ----- 2. regenerate Daily templates ----- */
-  const templates  = JSON.parse(localStorage.getItem('dailyTemplates') || '[]');
+  // Remove all completed daily tasks
+  state.completed = state.completed.filter(t => t.category !== 'daily');
+
+  // Regenerate daily templates
+  const templates = getDailyTemplates();
   templates.forEach(t => {
-    const fresh = { ...t, id: crypto.randomUUID(), created: new Date().toISOString() };
-    addTaskToStorage(fresh);
-    renderTaskCard(fresh);
+    const exists = state.active.some(
+      a => a.category === 'daily' && a.text === t.text
+    );
+    if (!exists) {
+      state.active.unshift({
+        id: cryptoId(),
+        text: t.text,
+        category: 'daily',
+        createdAt: Date.now(),
+      });
+    }
   });
+
+  saveTasks(state);
+}
+
+function cryptoId() {
+  if (window.crypto && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+  return 'id_' + Math.random().toString(16).slice(2) + '_' + Date.now().toString(16);
 }

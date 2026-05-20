@@ -1,25 +1,47 @@
 // js/dayRollover.js
-// ------------------------------------------------
-// Call initDailyRollover(callback) once on launch.
-// `callback` is your app‑specific function that
-// resets Daily tasks, updates streaks, etc.
-// ------------------------------------------------
-export function initDailyRollover(callback) {
-  // 1. run immediately if we crossed a day boundary
+// Daily rollover: regenerates daily tasks at midnight
+
+import { getTasks, saveTasks, getDailyTemplates } from './storage.js';
+
+export function initDailyRollover() {
+  // Run immediately if we crossed a day boundary
   if (needsRollover()) {
-    callback();
+    runRollover();
     markToday();
   }
 
-  // 2. schedule rollover when next midnight arrives
+  // Schedule rollover at next midnight
   scheduleNextMidnight(() => {
-    callback();
+    runRollover();
     markToday();
-    scheduleNextMidnight(arguments.callee); // schedule tomorrow
   });
 }
 
-/* ---------- internal helpers ---------- */
+function runRollover() {
+  const state = getTasks();
+  const templates = getDailyTemplates();
+
+  // Remove completed daily tasks
+  state.completed = state.completed.filter(t => t.category !== 'daily');
+
+  // Regenerate daily tasks from templates
+  templates.forEach(t => {
+    const exists = state.active.some(
+      a => a.category === 'daily' && a.text === t.text
+    );
+    if (!exists) {
+      state.active.unshift({
+        id: cryptoId(),
+        text: t.text,
+        category: 'daily',
+        createdAt: Date.now(),
+      });
+    }
+  });
+
+  saveTasks(state);
+}
+
 function needsRollover() {
   const last = localStorage.getItem('lastProcessed') || '';
   return last !== todayStr();
@@ -34,8 +56,13 @@ function todayStr() {
 }
 
 function scheduleNextMidnight(fn) {
-  const now   = new Date();
-  const next  = new Date(now);
-  next.setHours(24, 0, 0, 0);           // local midnight
+  const now = new Date();
+  const next = new Date(now);
+  next.setHours(24, 0, 0, 0);
   setTimeout(fn, next - now);
+}
+
+function cryptoId() {
+  if (window.crypto && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+  return 'id_' + Math.random().toString(16).slice(2) + '_' + Date.now().toString(16);
 }

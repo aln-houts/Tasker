@@ -11,12 +11,22 @@
     <header class="topbar">
       <div class="topbar-left">
         <div class="app-title">To-Do</div>
-        <div class="app-subtitle">chat-style checklist</div>
+        <div class="app-subtitle" id="taskCount">0 active · 0 done</div>
       </div>
 
       <div class="topbar-actions">
+        <button id="dailyToggleBtn" class="ghost" type="button" title="Toggle daily tasks">
+          📋 Daily
+        </button>
+        <button id="backupBtn" class="ghost" type="button" title="Export backup">
+          ↑ Export
+        </button>
+        <button id="importBtn" class="ghost" type="button" title="Import backup">
+          ↓ Import
+        </button>
+        <input id="importFileInput" type="file" accept=".json" style="display:none" />
         <button id="clearCompletedBtn" class="ghost" type="button" title="Clear completed">
-          Clear Completed
+          Clear ✓
         </button>
       </div>
     </header>
@@ -37,6 +47,12 @@
       <label class="sr-only" for="taskInput">New task</label>
 
       <div class="composer-shell">
+        <select id="categorySelect" class="category-select" aria-label="Task category">
+          <option value="personal">👤 Personal</option>
+          <option value="daily">📋 Daily</option>
+          <option value="project">📁 Project</option>
+          <option value="event">📅 Event</option>
+        </select>
         <input
           id="taskInput"
           name="task"
@@ -54,6 +70,6 @@
     </form>
   </main>
 
-  <script src="./app.js"></script>
+  <script type="module" src="./app.js"></script>
 </body>
 </html>
